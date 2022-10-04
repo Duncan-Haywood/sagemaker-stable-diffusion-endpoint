@@ -1,6 +1,8 @@
 from sagemaker.async_inference import AsyncInferenceConfig
 from sagemaker.huggingface import HuggingFaceModel
 import sagemaker
+from sagemaker.predictor import Predictor
+from sagemaker.predictor_async import AsyncPredictor
 
 
 class DiffusionEndpoint:
@@ -16,10 +18,12 @@ class DiffusionEndpoint:
         self.model_path = (
             "s3://{self.s3_bucket}/{self.bucket_prefix}/{self.model_name}/model.tar.gz"
         )
+        self.endpoint_name = "stable-diffusion-inpaint-endpoint"
         self.async_predictor = None
         self.model = None
 
     def predict(self, relative_file_path, **kwargs):
+        self.get_predictor()
         full_file_path = f"{self.input_path}/{relative_file_path}"
         response = self.async_predictor.predict(full_file_path, kwargs)
         return response
@@ -44,9 +48,10 @@ class DiffusionEndpoint:
         self.async_predictor = self.model.deploy(
             async_inference_config=async_config,
             initial_instance_count=0,
-            #    instance_type="ml.p2.xlarge", # price per hour: $1.125
-            # accelerator_type="ml.eia2.xlarge" # price per hour: $0.476
-            # data_capture_config=data_capture_config
+            endpoint_name=self.endpoint_name,
+            instance_type="",  # TODO
+            #    instance_type="ml.p2.xlarge", # price per hour: $1.125 for GPU use
+            accelerator_type="ml.eia2.xlarge",  # price per hour: $0.476
         )
 
     def undeploy(self):
@@ -58,4 +63,9 @@ class DiffusionEndpoint:
 
     def get_predictor(self):
         """Retrieve predictor object"""
-        NotImplemented
+        if self.async_predictor == None:
+            self.async_predictor = AsyncPredictor(
+                Predictor(endpoint_name=self.endpoint_name, sagemaker_session=self.sess)
+            )
+        else:
+            pass
