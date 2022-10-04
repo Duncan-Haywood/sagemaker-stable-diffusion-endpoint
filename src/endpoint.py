@@ -41,12 +41,11 @@ class DiffusionEndpoint:
         async_config = AsyncInferenceConfig(
             output_path=self.output_path,
         )
-        # data_capture_config= TODO
         self.async_predictor = self.model.deploy(
             async_inference_config=async_config,
             initial_instance_count=0,
             #    instance_type="ml.p2.xlarge", # price per hour: $1.125
-            # accelerator_type="ml.eia2.xlarge" # price per hou: $0.476
+            # accelerator_type="ml.eia2.xlarge" # price per hour: $0.476
             # data_capture_config=data_capture_config
         )
 
@@ -55,4 +54,8 @@ class DiffusionEndpoint:
 
     def model_hub_to_s3(self):
         """move hugging face model to s3 bucket for use"""
+        NotImplemented
+
+    def get_predictor(self):
+        """Retrieve predictor object"""
         NotImplemented
