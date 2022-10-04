@@ -25,8 +25,8 @@ from logging import Logger
 
 
 def model_fn(model_dir):
-    """This overwrites the load() function in a sagemaker HuggingFaceHandlerService. It tells how to load a hugging face model in the HuggingFaceModel __init__ call. For our case, it will load the model from the s3 bucket where this is bundled with the model file (model.tar.gz) for our StableDiffuserInpaintPipeline (SDIP). 
-    For the pipeline itself. 
+    """This overwrites the load() function in a sagemaker HuggingFaceHandlerService. It tells how to load a hugging face model in the HuggingFaceModel __init__ call. For our case, it will load the model from the s3 bucket where this is bundled with the model file (model.tar.gz) for our StableDiffuserInpaintPipeline (SDIP).
+    For the pipeline itself.
     Pipeline for text-guided image inpainting using Stable Diffusion. *This is an experimental feature*.
     This model inherits from [`DiffusionPipeline`]. Check the superclass documentation for the generic methods the
     library implements for all the pipelines (such as downloading or saving, running on a particular device, etc.)
@@ -100,5 +100,3 @@ def predict_fn(prompt, model, **kwargs):
     """
     with torch.autocast("cuda"):
         prediction = model(prompt, kwargs)
-
-
