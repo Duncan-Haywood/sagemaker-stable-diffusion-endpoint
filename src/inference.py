@@ -24,10 +24,14 @@ import torch
 from logging import Logger
 
 
-def model_fn(model_dir, **kwargs):
-    """This overwrites the load() function in a sagemaker HuggingFaceHandlerService. It tells how to 
+def model_fn(model_dir):
+    """This overwrites the load() function in a sagemaker HuggingFaceHandlerService. It tells how to load a hugging face model in the HuggingFaceModel __init__ call. For our case, it will load the model from the s3 bucket where this is bundled with the model file (model.tar.gz) for our StableDiffuserInpaintPipeline (SDIP). 
+    For the pipeline itself. 
+    Pipeline for text-guided image inpainting using Stable Diffusion. *This is an experimental feature*.
+    This model inherits from [`DiffusionPipeline`]. Check the superclass documentation for the generic methods the
+    library implements for all the pipelines (such as downloading or saving, running on a particular device, etc.)
     """
-    model = StableDiffusionInpaintPipeline.from_pretrained(model_dir, kwargs)
+    model = StableDiffusionInpaintPipeline.from_pretrained(model_dir)
     try:
         model.to("cuda")
     except:
@@ -43,9 +47,6 @@ def predict_fn(prompt, model, **kwargs):
         Args:
             prompt (dict): deserialized decoded_input_data returned by the input_fn
             model : Model returned by the `load` method or if it is a custom module `model_fn`.
-        Returns:
-            obj (dict): prediction result.
-
     Function invoked when calling the pipeline for generation.
     Args + kwargs:
         prompt (`str` or `List[str]`):
@@ -92,21 +93,12 @@ def predict_fn(prompt, model, **kwargs):
             called at every step.
     Returns:
         [`~pipelines.stable_diffusion.StableDiffusionPipelineOutput`] or `tuple`:
-        [`~pipelines.stable_diffusion.StableDiffusionPipelineOutput`] if `return_dict` is True, otherwise a `tuple.
+        [`~pipelines.stable_diffusion.StableDiffusionPipelineOutput`] if `return_dict` is True, otherwise a `tuple. (default true) type: ordered dict
         When returning a tuple, the first element is a list with the generated images, and the second element is a
         list of `bool`s denoting whether the corresponding generated image likely represents "not-safe-for-work"
         (nsfw) content, according to the `safety_checker`.
     """
     with torch.autocast("cuda"):
         prediction = model(prompt, kwargs)
-    safe_for_work_images = get_safe_for_work_images(prediction)
-
-    return safe_for_work_images
 
 
-def get_safe_for_work_images(prediction):
-    """Filters images on whether they are safe for work or not and returns only ones that are SFW."""
-    safe_for_work_images = [
-        prediction[0][i] for i in range(len(prediction[1])) if not prediction[1][i]
-    ]
-    return safe_for_work_images
