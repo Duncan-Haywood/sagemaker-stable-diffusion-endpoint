@@ -21,16 +21,17 @@ accept is the return accept type from the HTTP Request, e.g. application/json.
 
 from diffusers import StableDiffusionInpaintPipeline
 import torch
-import logging
+from logging import Logger
 
 
 def model_fn(model_dir, **kwargs):
-    """This overwrites the load() function in a sagemaker HuggingFaceModel """
+    """This overwrites the load() function in a sagemaker HuggingFaceHandlerService. It tells how to 
+    """
     model = StableDiffusionInpaintPipeline.from_pretrained(model_dir, kwargs)
     try:
         model.to("cuda")
     except:
-        logging.warning("model.to('cuda') didn't work'")
+        Logger(__name__).warning("model.to('cuda') didn't work'")
     finally:
         return model
 
