@@ -28,6 +28,9 @@ class DiffusionEndpoint:
         response = self.async_predictor.predict(full_file_path, kwargs)
         return response
 
+    def upload_and_predict(self, local_file_path, **kwargs):
+        pass
+
     def build_model(self):
         """Create Hugging Face Model Class for dpeloyment and prediction."""
         self.model = HuggingFaceModel(
@@ -55,6 +58,7 @@ class DiffusionEndpoint:
         )
 
     def undeploy(self):
+        self.get_predictor()
         self.async_predictor.delete_endpoint()
 
     def model_hub_to_s3(self):
