@@ -4,6 +4,7 @@ from sagemaker.huggingface import HuggingFaceModel
 import sagemaker
 from sagemaker.predictor import Predictor
 from sagemaker.predictor_async import AsyncPredictor
+from sagemaker.async_inference.async_inference_response import AsyncInferenceResponse
 
 
 class DiffusionEndpoint:
@@ -24,13 +25,21 @@ class DiffusionEndpoint:
         self.model = None
         self.model_hub_key = None
 
-    def main_predict(self, local_file_path, **kwargs):
+    def main_predict(self, local_file_path: str, **kwargs) -> AsyncInferenceResponse:
+        """Runs Stable Diffusion Inpaint Hugging Face model on Async Sagemaker endpoint.
+        Args:
+            local_file_path: the location of files to run endpoint on.
+        Kwargs:
+            TODO
+        Return:
+            Sagemaker Endpoint response sagemaker AsyncInferenceResponse
+        """
         NotImplemented
-        self._upload_data_to_s3(local_file_path)
-        self._predict(local_file_path, kwargs)
+        self._upload_input_data_to_s3(local_file_path)
+        response = self._predict(local_file_path, kwargs)
 
     def deploy(self):
-        """Deploy model to endpoint"""
+        """Deploy model to Sagemaker endpoint"""
         self.build_model()
         async_config = AsyncInferenceConfig(
             output_path=self.output_path,
@@ -45,11 +54,12 @@ class DiffusionEndpoint:
         )
 
     def undeploy(self):
+        """Delete endpoint for predictions. Does not delete model."""
         self._get_predictor()
         self.async_predictor.delete_endpoint()
 
     def model_from_hub_to_s3(self):
-        """move hugging face model to s3 bucket for use"""
+        """Move hugging face model to s3 bucket for use"""
         NotImplemented
 
     def _get_predictor(self):
@@ -62,12 +72,14 @@ class DiffusionEndpoint:
             pass
 
     def _predict(self, relative_file_path, **kwargs):
+        """Prediction step. See main_predict for more details."""
         self._get_predictor()
         full_file_path = f"{self.input_path}/{relative_file_path}"
         response = self.async_predictor.predict(full_file_path, kwargs)
         return response
 
-    def _upload_data_to_s3(self, local_file_path):
+    def _upload_input_data_to_s3(self, local_file_path):
+        """Upload input data from local file to correct s3 bucket for prediction."""
         NotImplemented
 
     def _build_model(self):
