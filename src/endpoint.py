@@ -4,6 +4,8 @@ import sagemaker
 from sagemaker.predictor import Predictor
 from sagemaker.predictor_async import AsyncPredictor
 from sagemaker.async_inference.async_inference_response import AsyncInferenceResponse
+from diffusers import StableDiffusionInpaintPipeline
+import boto3
 
 
 class DiffusionEndpoint:
@@ -22,7 +24,8 @@ class DiffusionEndpoint:
         self.endpoint_name = "stable-diffusion-inpaint-endpoint"
         self.async_predictor = None
         self.model = None
-        self.model_hub_key = None
+        self.huggingface_token_ssm_name = "hugging_face_hub_token"
+        self.ssm = None
 
     def main_predict(self, local_file_path: str, **kwargs) -> AsyncInferenceResponse:
         """Runs Stable Diffusion Inpaint Hugging Face model on Async Sagemaker endpoint.
@@ -31,11 +34,12 @@ class DiffusionEndpoint:
         Kwargs:
             TODO
         Return:
-            Sagemaker Endpoint response sagemaker AsyncInferenceResponse
+            Sagemaker Endpoint response sagemaker `AsyncInferenceResponse` (call  `response.get_response()` for data)
         """
         NotImplemented
         self._upload_input_data_to_s3(local_file_path)
         response = self._predict(local_file_path, kwargs)
+        return response
 
     def deploy(self):
         """Deploy model to Sagemaker endpoint"""
@@ -59,7 +63,21 @@ class DiffusionEndpoint:
 
     def get_model_from_hub(self):
         """Move hugging face model to s3 bucket for use. Zips with inference.py for use by sagemaker."""
-        NotImplemented
+        hugging_face_token = self._get_secret(self.huggingface_token_ssm_name)
+        model = StableDiffusionInpaintPipeline.from_pretrained(
+            self.model_repository, use_auth_token=hugging_face_token
+        )
+
+    def _get_secret(self, secret_name):
+        """Get an ssm secret's value from it's common name."""
+        self.ssm = boto3.client("secretsmanager")
+        secret_info = self.ssm.list_secrets(
+            Filters=[{"Key": "name", "Values": secret_name}]
+        )
+        secret_arn = secret_info["SecretList"][0]["ARN"]
+        secret_response = self.ssm.get_secret_value(SecretId=secret_arn)
+        secret = secret_response["SecretString"]
+        return secret
 
     def _get_predictor(self):
         """Retrieve predictor object"""
