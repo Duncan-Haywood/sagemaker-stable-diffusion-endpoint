@@ -1,3 +1,4 @@
+from threading import local
 from sagemaker.async_inference import AsyncInferenceConfig
 from sagemaker.huggingface import HuggingFaceModel
 import sagemaker
@@ -21,26 +22,12 @@ class DiffusionEndpoint:
         self.endpoint_name = "stable-diffusion-inpaint-endpoint"
         self.async_predictor = None
         self.model = None
+        self.model_hub_key = None
 
-    def predict(self, relative_file_path, **kwargs):
-        self.get_predictor()
-        full_file_path = f"{self.input_path}/{relative_file_path}"
-        response = self.async_predictor.predict(full_file_path, kwargs)
-        return response
-
-    def upload_and_predict(self, local_file_path, **kwargs):
-        pass
-
-    def build_model(self):
-        """Create Hugging Face Model Class for dpeloyment and prediction."""
-        self.model = HuggingFaceModel(
-            model_data=self.model_path,
-            # entry_point=
-            role=self.role,  # iam role with permissions to create an Endpoint
-            transformers_version="4.6",  # transformers version used
-            pytorch_version="1.7",  # pytorch version used
-            py_version="py36",  # python version of the DLC
-        )
+    def main_predict(self, local_file_path, **kwargs):
+        NotImplemented
+        self._upload_data_to_s3(local_file_path)
+        self._predict(local_file_path, kwargs)
 
     def deploy(self):
         """Deploy model to endpoint"""
@@ -58,14 +45,14 @@ class DiffusionEndpoint:
         )
 
     def undeploy(self):
-        self.get_predictor()
+        self._get_predictor()
         self.async_predictor.delete_endpoint()
 
-    def model_hub_to_s3(self):
+    def model_from_hub_to_s3(self):
         """move hugging face model to s3 bucket for use"""
         NotImplemented
 
-    def get_predictor(self):
+    def _get_predictor(self):
         """Retrieve predictor object"""
         if self.async_predictor == None:
             self.async_predictor = AsyncPredictor(
@@ -73,3 +60,23 @@ class DiffusionEndpoint:
             )
         else:
             pass
+
+    def _predict(self, relative_file_path, **kwargs):
+        self._get_predictor()
+        full_file_path = f"{self.input_path}/{relative_file_path}"
+        response = self.async_predictor.predict(full_file_path, kwargs)
+        return response
+
+    def _upload_data_to_s3(self, local_file_path):
+        NotImplemented
+
+    def _build_model(self):
+        """Create Hugging Face Model Class for dpeloyment and prediction."""
+        self.model = HuggingFaceModel(
+            model_data=self.model_path,
+            # entry_point=
+            role=self.role,  # iam role with permissions to create an Endpoint
+            transformers_version="4.6",  # transformers version used
+            pytorch_version="1.7",  # pytorch version used
+            py_version="py36",  # python version of the DLC
+        )
