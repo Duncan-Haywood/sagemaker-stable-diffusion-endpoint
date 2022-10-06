@@ -1,4 +1,3 @@
-from threading import local
 from sagemaker.async_inference import AsyncInferenceConfig
 from sagemaker.huggingface import HuggingFaceModel
 import sagemaker
@@ -40,7 +39,7 @@ class DiffusionEndpoint:
 
     def deploy(self):
         """Deploy model to Sagemaker endpoint"""
-        self.build_model()
+        self._build_model()
         async_config = AsyncInferenceConfig(
             output_path=self.output_path,
         )
@@ -58,8 +57,8 @@ class DiffusionEndpoint:
         self._get_predictor()
         self.async_predictor.delete_endpoint()
 
-    def model_from_hub_to_s3(self):
-        """Move hugging face model to s3 bucket for use"""
+    def get_model_from_hub(self):
+        """Move hugging face model to s3 bucket for use. Zips with inference.py for use by sagemaker."""
         NotImplemented
 
     def _get_predictor(self):
