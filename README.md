@@ -7,7 +7,7 @@
 ```from diffusion_endpoint.endpoint import DiffusionEndpoint
 endpoint = DiffusionEndpoint()
 
-response = endpoint.upload_and_predict(local_file_path, [kwargs]) # TODO
+response = endpoint.main_predict(local_file_path, [kwargs]) # TODO
 ```
 
 And you can check your response with
@@ -17,4 +17,5 @@ And you can check your response with
 
 ### for deployment run
 
-``````
+```# TODO
+```
