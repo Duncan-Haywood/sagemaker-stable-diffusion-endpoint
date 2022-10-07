@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "endpoint_infrastructure"
+version = "0.1.0"
+description = "infrastructure as code for diffusion endpoint"
+authors = ["Duncan Haywood"]
+license = "Prop"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+aws-cdk-lib = "^2.45.0"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
