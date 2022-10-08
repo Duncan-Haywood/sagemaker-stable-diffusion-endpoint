@@ -26,7 +26,7 @@ class EndpointConifgConstruct(Construct):
         super().__init__(scope, construct_id, **kwargs)
 
         accelerator_type = "eia2.xlarge"
-        instance_type="ml.t2.xlarge"
+        instance_type = "ml.t2.xlarge"
 
         model = ModelConstruct(self)
         async_inference_config = AsyncConfigConstruct(self)
