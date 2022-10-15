@@ -10,6 +10,7 @@ def test_get_env():
 
 def test_create_secret():
     token = "test"
-    response = create_secret.create_secret(token)
+    secret_name = "test"
+    response = create_secret.create_secret(secret_name, token)
     assert response is not None
     assert response["Name"] is not None

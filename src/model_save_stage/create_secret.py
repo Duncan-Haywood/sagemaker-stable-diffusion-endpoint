@@ -6,12 +6,10 @@ import logging
 from botocore.exceptions import ClientError
 
 
-def create_secret(token: str):
+def create_secret(secret_name: str, token: str):
     """creates hugging face token for use in model download and upload.
     Args:
         token: the Huggingface model hub api token."""
-    env = get_env()
-    secret_name = env["huggingface_token_secret_name"]
     sm = boto3.client("secretsmanager")
     try:
         response = sm.create_secret(
@@ -42,7 +40,9 @@ def get_env():
 
 def main():
     token = typer.prompt("hugging face api token:")
-    create_secret(token)
+    env = get_env()
+    secret_name = env["huggingface_token_secret_name"]
+    create_secret(secret_name, token)
 
 
 if __name__ == "__main__":
