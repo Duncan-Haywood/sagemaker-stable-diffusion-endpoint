@@ -1,6 +1,7 @@
 from . import create_secret
 from botocore.stub import Stubber, ANY
 import botocore.session
+import pytest
 
 
 def test_get_env():
@@ -14,3 +15,9 @@ def test_create_secret():
     response = create_secret.create_secret(secret_name, token)
     assert response is not None
     assert response["Name"] is not None
+
+
+def test_get_token_secret_name():
+    env = create_secret.get_env()
+    secret_name = create_secret.get_token_secret_name(env)
+    assert secret_name is not None

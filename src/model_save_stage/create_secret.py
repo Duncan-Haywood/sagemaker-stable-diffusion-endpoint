@@ -38,10 +38,15 @@ def get_env():
     return env
 
 
+def get_token_secret_name(env):
+    secret_name = env["huggingface_token_secret_name"]
+    return secret_name
+
+
 def main():
     token = typer.prompt("hugging face api token:")
     env = get_env()
-    secret_name = env["huggingface_token_secret_name"]
+    secret_name = get_token_secret_name(env)
     create_secret(secret_name, token)
 
 
