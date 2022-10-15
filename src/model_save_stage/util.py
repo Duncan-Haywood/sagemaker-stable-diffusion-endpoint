@@ -55,3 +55,13 @@ def get_model_repository(env):
 def get_huggingface_secret_name(env):
     secret_name = env["huggingface_token_secret_name"]
     return secret_name
+
+
+def upload_file_to_s3(bucket_name: str, local_dir: str, key: str):
+    """uploads file to s3"""
+    s3 = boto3.resource("s3")
+    bucket = s3.Bucket(bucket_name)
+    response = None
+    with open(local_dir, "rb") as data:
+        response = bucket.upload_fileobj(data, key)
+    return response
