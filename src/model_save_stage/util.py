@@ -11,9 +11,10 @@ def get_env():
     return env
 
 
-def create_secret(secret_name: str, secret_string: str, description: str = None):
+def create_secret(secret_name: str, secret_string: str, description: str = ""):
     """Creates secret with error handling."""
     sm = boto3.client("secretsmanager")
+    response = None
     try:
         response = sm.create_secret(
             Name=secret_name,
@@ -29,9 +30,10 @@ def create_secret(secret_name: str, secret_string: str, description: str = None)
             logging.info("secret exists, updated secret")
         else:
             logging.exception("")
-            response = None
             raise error
-
+    except Exception as e:
+        logging.exception("")
+        raise e
     finally:
         return response
 
@@ -43,3 +45,13 @@ def get_secret(secret_name):
     response = sm.get_secret_value(SecretId=secret_name)
     secret = response["SecretString"]
     return secret
+
+
+def get_model_repository(env):
+    model_repository = env["model_repository"]
+    return model_repository
+
+
+def get_huggingface_secret_name(env):
+    secret_name = env["huggingface_token_secret_name"]
+    return secret_name
