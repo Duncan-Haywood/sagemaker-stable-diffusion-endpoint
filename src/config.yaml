@@ -1,0 +1,10 @@
+---
+model_repository: "CompVis/stable-diffusion-v-1-4"
+huggingface_token_secret_name: "huggingface_api_token"
+model_bucket_name: null
+input_bucket_name: null
+output_bucket_name: null
+
+
+
+    
