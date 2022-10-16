@@ -6,8 +6,6 @@ authors = ["Duncan"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
-boto3 = "^1.24.91"
-typer = "^0.6.1"
 PyYAML = "^6.0"
 diffusers = "^0.5.1"
 torch = "^1.12.1"
