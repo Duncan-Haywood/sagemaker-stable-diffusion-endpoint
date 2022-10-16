@@ -5,8 +5,8 @@ import boto3
 
 
 @pytest.fixture
-def env():
-    return util.get_env()
+def config():
+    return util.get_config()
 
 
 @pytest.fixture
@@ -48,9 +48,9 @@ def key():
     return "test.txt"
 
 
-def test_get_env():
-    env = util.get_env()
-    assert env["model_repository"] is not None
+def test_get_config():
+    config = util.get_config()
+    assert config["model_repository"] is not None
 
 
 def test_create_secret(secret_name, secret_string):
@@ -64,13 +64,13 @@ def test_get_secret(secret_name, create_secret, secret_string):
     assert secret_string == response
 
 
-def test_get_model_repository(env):
-    model_repository = util.get_model_repository(env)
+def test_get_model_repository(config):
+    model_repository = util.get_model_repository(config)
     assert model_repository is not None
 
 
-def test_get_huggingface_secret_name(env):
-    secret_name = util.get_huggingface_secret_name(env)
+def test_get_huggingface_secret_name(config):
+    secret_name = util.get_huggingface_secret_name(config)
     assert secret_name is not None
 
 
