@@ -4,13 +4,6 @@ import logging
 from botocore.exceptions import ClientError
 
 
-def get_config():
-    with open("./config.yaml", "rb") as file:
-        config = yaml.safe_load(file)
-
-    return config
-
-
 def create_secret(secret_name: str, secret_string: str, description: str = ""):
     """Creates secret with error handling."""
     sm = boto3.client("secretsmanager")
@@ -47,16 +40,6 @@ def get_secret(secret_name):
     return secret
 
 
-def get_model_repository(config):
-    model_repository = config["model_repository"]
-    return model_repository
-
-
-def get_huggingface_secret_name(config):
-    secret_name = config["huggingface_token_secret_name"]
-    return secret_name
-
-
 def upload_file_to_s3(bucket_name: str, local_dir: str, key: str):
     """uploads file to s3"""
     s3 = boto3.resource("s3")
@@ -73,3 +56,20 @@ def get_model_bucket_name(config):
 
 def get_model_s3_key(config):
     raise NotImplementedError
+
+
+def get_model_repository(config):
+    model_repository = config["model_repository"]
+    return model_repository
+
+
+def get_huggingface_secret_name(config):
+    secret_name = config["huggingface_token_secret_name"]
+    return secret_name
+
+
+def get_config():
+    with open("./config.yaml", "rb") as file:
+        config = yaml.safe_load(file)
+
+    return config
