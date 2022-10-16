@@ -4,11 +4,11 @@ import logging
 from botocore.exceptions import ClientError
 
 
-def get_env():
-    with open("./env.yaml", "rb") as file:
-        env = yaml.safe_load(file)
+def get_config():
+    with open("./config.yaml", "rb") as file:
+        config = yaml.safe_load(file)
 
-    return env
+    return config
 
 
 def create_secret(secret_name: str, secret_string: str, description: str = ""):
@@ -47,13 +47,13 @@ def get_secret(secret_name):
     return secret
 
 
-def get_model_repository(env):
-    model_repository = env["model_repository"]
+def get_model_repository(config):
+    model_repository = config["model_repository"]
     return model_repository
 
 
-def get_huggingface_secret_name(env):
-    secret_name = env["huggingface_token_secret_name"]
+def get_huggingface_secret_name(config):
+    secret_name = config["huggingface_token_secret_name"]
     return secret_name
 
 
@@ -65,3 +65,11 @@ def upload_file_to_s3(bucket_name: str, local_dir: str, key: str):
     with open(local_dir, "rb") as data:
         response = bucket.upload_fileobj(data, key)
     return response
+
+
+def get_model_bucket_name(config):
+    raise NotImplementedError
+
+
+def get_model_s3_key(config):
+    raise NotImplementedError

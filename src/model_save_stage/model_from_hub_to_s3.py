@@ -1,7 +1,6 @@
 """Run upload_huggingface_token.py before use -- a dependency."""
 from diffusers import StableDiffusionInpaintPipeline
 import logging
-import boto3
 from . import util
 import torch
 
@@ -34,21 +33,19 @@ def save_model_local(model, local_dir):
         raise e
 
 
-def upload_model_to_s3(local_dir):
-    s3 = boto3.resource("s3")
-    bucket = s3.Bucket()
-
-
 def main():
-    env = util.get_env()
-    model_id = util.get_model_repository(env)
+    config = util.get_config()
+    model_id = util.get_model_repository(config)
     local_dir = "./model"
-    huggingface_secret_name = util.get_huggingface_secret_name(env)
+    bucket_name = util.get_model_bucket_name(config)
+    key = util.get_model_s3_key(config)
+    huggingface_secret_name = util.get_huggingface_secret_name(config)
     hugging_face_token = util.get_secret(huggingface_secret_name)
     model = load_model(model_id, hugging_face_token)
     save_model_local(model, local_dir)
-    upload_model_to_s3(local_dir)
+    util.upload_file_to_s3(bucket_name, local_dir, key)
 
+def lambda_handler(event, context):
 
 if __name__ == "__main__":
     main()
