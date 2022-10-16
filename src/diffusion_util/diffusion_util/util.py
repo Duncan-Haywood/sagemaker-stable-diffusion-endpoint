@@ -2,6 +2,7 @@ import yaml
 import boto3
 import logging
 from botocore.exceptions import ClientError
+from . import config
 
 
 def create_secret(secret_name: str, secret_string: str, description: str = ""):
@@ -69,7 +70,4 @@ def get_huggingface_secret_name(config):
 
 
 def get_config():
-    with open("./config.yaml", "rb") as file:
-        config = yaml.safe_load(file)
-
-    return config
+    return config.config
