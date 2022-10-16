@@ -45,7 +45,10 @@ def main():
     save_model_local(model, local_dir)
     util.upload_file_to_s3(bucket_name, local_dir, key)
 
+
 def lambda_handler(event, context):
+    main()
+
 
 if __name__ == "__main__":
     main()
