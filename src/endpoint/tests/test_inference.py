@@ -1,4 +1,4 @@
-from diffusion_endpoint import inference
+from endpoint import inference
 
 
 def test_predict_fn():
