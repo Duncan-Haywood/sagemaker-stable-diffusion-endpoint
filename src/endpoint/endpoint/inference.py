@@ -21,7 +21,6 @@ accept is the return accept type from the HTTP Request, e.g. application/json.
 
 from diffusers import StableDiffusionInpaintPipeline
 import torch
-from logging import Logger
 
 
 def model_fn(model_dir):
@@ -32,12 +31,7 @@ def model_fn(model_dir):
     library implements for all the pipelines (such as downloading or saving, running on a particular device, etc.)
     """
     model = StableDiffusionInpaintPipeline.from_pretrained(model_dir)
-    try:
-        model.to("cuda")
-    except:
-        Logger(__name__).warning("model.to('cuda') didn't work'")
-    finally:
-        return model
+    return model
 
 
 def predict_fn(prompt, model, **kwargs):
@@ -100,3 +94,9 @@ def predict_fn(prompt, model, **kwargs):
     """
     with torch.autocast("cuda"):
         prediction = model(prompt, kwargs)
+
+def input_fn(input_data):
+    raise NotImplementedError
+
+def output_fn(prediction, accept):
+    raise NotImplementedError
