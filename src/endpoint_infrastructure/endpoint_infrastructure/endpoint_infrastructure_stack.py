@@ -4,7 +4,8 @@ from constructs import Construct
 from aws_cdk import aws_sagemaker as sagemaker
 from aws_cdk import aws_s3 as s3
 from aws_cdk import aws_sns as sns
-from sagemaker.huggingface import HuggingFaceModel
+from aws_cdk import aws_ecr as ecr
+from aws_cdk import aws_ecr_assets as ecr_assets
 
 
 class EndpointInfrastructureStack(Stack):
@@ -34,6 +35,7 @@ class EndpointConifgConstruct(Construct):
         # create production deployent config for instances
         prod_variant_config = sagemaker.CfnEndpointConfig.ProductionVariantProperty(
             model_name=model.model_name,
+            variant_name="production",
             accelerator_type=accelerator_type,
             initial_instance_count=0,
             instance_type=instance_type,
@@ -47,6 +49,8 @@ class EndpointConifgConstruct(Construct):
             production_variants=[prod_variant_config],
         )
 
+        return endpoint_config
+
 
 class ModelConstruct(Construct):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
@@ -54,6 +58,24 @@ class ModelConstruct(Construct):
 
         # model bucket
         model_bucket = s3.Bucket(self, "ModelBucket")
+
+        # container
+        environment = None
+        container_definition_property = sagemaker.CfnModel.ContainerDefinitionProperty(
+            environment=environment,
+            image=NotImplemented,
+            image_config=sagemaker.CfnModel.ImageConfigProperty(
+                repository_access_mode="repositoryAccessMode",
+                # the properties below are optional
+                repository_auth_config=sagemaker.CfnModel.RepositoryAuthConfigProperty(
+                    repository_credentials_provider_arn="repositoryCredentialsProviderArn"
+                ),
+            ),
+            inference_specification_name="inferenceSpecificationName",
+            mode="mode",
+            model_data_url="modelDataUrl",
+            model_package_name="modelPackageName",
+        )
 
 
 class AsyncConfigConstruct(Construct):
@@ -88,3 +110,24 @@ class AsyncConfigConstruct(Construct):
                 ),
             ),
         )
+
+        return async_inference_config
+
+
+class ModelContainer(Construct):
+    def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+        NotImplemented
+        """Deep Learning AMI GPU PyTorch 1.12.? ${PATCH_VERSION} (Amazon Linux 2) ${YYYY-MM-DD}
+        
+        Supported EC2 Instances: G3, P3, P3dn, P4d, G5, G4dn
+        
+        https://aws.amazon.com/releasenotes/aws-deep-learning-ami-gpu-pytorch-1-12-amazon-linux-2/"""
+
+        repository = ecr.Repository(
+            self,
+            "DiffusionEndpointRepository",
+            image_scan_on_push=True,
+        )
+
+        image = ecr_assets  # TODO
