@@ -1,4 +1,5 @@
-import yaml
+import pickle
+from typing import Union
 import boto3
 import logging
 from botocore.exceptions import ClientError
@@ -51,23 +52,56 @@ def upload_file_to_s3(bucket_name: str, local_dir: str, key: str):
     return response
 
 
-def get_model_bucket_name(config):
+def download_from_s3(bucket_name: str, local_dir: str, key: str):
+    """download file from s3"""
+    s3 = boto3.resource("s3")
+    bucket = s3.Bucket(bucket_name)
+    with open(local_dir, "wb") as file:
+        response = bucket.download_fileobj(key, file)
+
+
+def get_model_bucket_name():
+    config = get_config()
     raise NotImplementedError
 
 
-def get_model_s3_key(config):
+def get_model_s3_key():
+    config = get_config()
     raise NotImplementedError
 
 
-def get_model_repository(config):
+def get_model_repository():
+    config = get_config()
     model_repository = config["model_repository"]
     return model_repository
 
 
-def get_huggingface_secret_name(config):
+def get_huggingface_secret_name():
+    config = get_config()
     secret_name = config["huggingface_token_secret_name"]
     return secret_name
 
 
 def get_config():
     return config.config
+
+
+def serialize_sagemaker_input(*args, **kwargs) -> bytes:
+    # pickle supports PIL Image instances
+    bytesobj = pickle.dumps((args, kwargs))
+    return bytesobj
+
+
+def deserialize_sagemaker_input(bytesobj: bytes) -> dict:
+    kwargs = pickle.loads(bytesobj)
+    return kwargs
+
+
+def serialize_sagemaker_output(response: Union[dict, tuple]) -> bytes:
+    bytesobj = pickle.dumps(response)
+    return bytesobj
+
+
+def deserialize_sagemaker_output(bytesobj: bytes) -> Union[dict, tuple]:
+    predictions = pickle.loads(bytesobj)
+    return predictions
