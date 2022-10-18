@@ -2,20 +2,19 @@
 
 ## Usage
 
+### Installation
+
+```pip install diffusion-predict
+```
+
 ### for prediction run in your python file
 
-```from diffusion_endpoint.endpoint import DiffusionEndpoint
-endpoint = DiffusionEndpoint()
-
-response = endpoint.main_predict(local_file_path, [kwargs]) # TODO
+```import diffsusion_predict
+predictor = diffusion_predict.Predictor()
+response = predictor.predict(args, kwargs) # see diffusers/StableDiffusionInpaintPipeline for args and kwargs
 ```
 
-And you can check your response with
 
-```# TODO
-```
+### for deployment run TODO
 
-### for deployment run
-
-```# TODO
-```
+use poetry and aws-cdk lib
