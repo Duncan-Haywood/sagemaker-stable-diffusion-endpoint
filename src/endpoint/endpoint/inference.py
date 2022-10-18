@@ -42,6 +42,7 @@ def download_model(local_dir: str):
 
 
 def to_gpu(model: StableDiffusionInpaintPipeline) -> StableDiffusionInpaintPipeline:
+    """Casts torch model to gpu if available."""
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model.to(device)
     return model
