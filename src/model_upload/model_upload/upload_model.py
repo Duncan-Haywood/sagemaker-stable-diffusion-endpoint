@@ -17,7 +17,7 @@ def load_model(model_id, hugging_face_token):
         )
         logging.info("model_download succeeded")
     except Exception as e:
-        logging.exception("failed model download")
+        logging.exception("Failed model download")
         raise e
     finally:
         return model
