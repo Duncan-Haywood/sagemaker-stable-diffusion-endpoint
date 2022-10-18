@@ -2,7 +2,7 @@
 # This is a Python 3 image that uses the nginx, gunicorn, flask stack
 # for serving inferences in a stable way.
 
-FROM ubuntu:18.04
+FROM nvidia/cuda:9.2-cudnn7-runtime-ubuntu18.04
 
 RUN apt-get -y update && apt-get install -y --no-install-recommends \
          wget \
@@ -20,6 +20,9 @@ RUN ln -s /usr/bin/pip3 /usr/bin/pip
 # linking them together. Likewise, pip leaves the install caches populated which uses
 # a significant amount of space. These optimizations save a fair amount of space in the
 # image, which reduces start up time.
+RUN pip install poetry
+COPY pyproject.toml poetry.lock ./
+RUN poetry export --output ./requirements.txt
 RUN pip --no-cache-dir install -r requirements.txt
 
 # Set some environment variables. PYTHONUNBUFFERED keeps Python from buffering our standard
@@ -32,5 +35,6 @@ ENV PYTHONDONTWRITEBYTECODE=TRUE
 ENV PATH="/opt/program:${PATH}"
 
 # Set up the program in the image
-COPY diffusion /opt/program
+COPY endpoint /opt/program
 WORKDIR /opt/program
+
