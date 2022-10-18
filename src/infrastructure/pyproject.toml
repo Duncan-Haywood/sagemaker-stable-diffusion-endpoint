@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "endpoint_infrastructure"
+name = "infrastructure"
 version = "0.1.0"
 description = "infrastructure as code for diffusion endpoint"
 authors = ["Duncan Haywood"]
