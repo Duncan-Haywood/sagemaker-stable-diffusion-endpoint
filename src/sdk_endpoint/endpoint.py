@@ -1,3 +1,4 @@
+"""Broken currently. Needs to be switched from Hugging face framework. Being deprecated in favor of CDK for deployment -- for better CICD capabilities and infrastructure configuration and management; for example, switching from sagemaker to ECS would be a significant difficulty and would likely lead to downtime when using this approach with the SDK."""
 from sagemaker.async_inference import AsyncInferenceConfig
 from sagemaker.huggingface import HuggingFaceModel
 import sagemaker
@@ -51,7 +52,7 @@ class DiffusionEndpoint:
             async_inference_config=async_config,
             initial_instance_count=0,
             endpoint_name=self.endpoint_name,
-            instance_type="",  # TODO
+            instance_type="ml.t2.xlarge",  # TODO
             #    instance_type="ml.p2.xlarge", # price per hour: $1.125 for GPU use
             accelerator_type="ml.eia2.xlarge",  # price per hour: $0.476
         )
