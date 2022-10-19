@@ -1,21 +1,25 @@
-# Build an image that can do training and inference in SageMaker
-# This is a Python 3 image that uses the nginx, gunicorn, flask stack
+# Build an image that can do inference in SageMaker
 # for serving inferences in a stable way.
 
+# GPU enabled image
 FROM nvidia/cuda:9.2-cudnn7-runtime-ubuntu18.04
 
+# Install necessary dependencies for MMS and SageMaker Inference Toolkit
 RUN apt-get -y update && apt-get install -y --no-install-recommends \
-         wget \
+             build-essential \
+            ca-certificates \
+            openjdk-8-jdk-headless \
+            curl \
+            vim \
          python3-pip \
          python3-setuptools \
-         nginx \
-         ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
+# set python3 as default
 RUN ln -s /usr/bin/python3 /usr/bin/python
 RUN ln -s /usr/bin/pip3 /usr/bin/pip
 
-# Here we get all python packages.
+# Here we get all python packages. converting them from the poetry dependency manager
 # There's substantial overlap between scipy and numpy that we eliminate by
 # linking them together. Likewise, pip leaves the install caches populated which uses
 # a significant amount of space. These optimizations save a fair amount of space in the
@@ -38,3 +42,5 @@ ENV PATH="/opt/program:${PATH}"
 COPY endpoint /opt/program
 WORKDIR /opt/program
 
+# starts the server which will handle sagemaker requests.
+ENTRYPOINT [ "python", "opt/program/endpoint/server.py" ]
