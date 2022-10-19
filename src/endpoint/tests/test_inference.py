@@ -1,7 +1,7 @@
 from endpoint import inference
 import pytest
-from PIL import Image
-from io import BytesIO
+from PIL import Image as ImageModule
+from PIL.Image import Image
 from diffusers import StableDiffusionInpaintPipeline
 
 
@@ -12,7 +12,7 @@ def image_size():
 
 @pytest.fixture
 def data(image_size: tuple) -> Image:
-    return Image.effect_noise(image_size, sigma=15)
+    return ImageModule.new("RGB", image_size)
 
 
 @pytest.fixture
@@ -26,11 +26,8 @@ def model_dir() -> str:
 
 
 @pytest.fixture
-def input_data(data: Image) -> BytesIO:
-    image_bytes = BytesIO()
-    file_type = "JPEG"
-    data.save(image_bytes, format=file_type)
-    return image_bytes
+def input_data(data: Image) -> bytes:
+    raise NotImplementedError
 
 
 @pytest.fixture
@@ -44,17 +41,20 @@ def accept() -> str:
 
 
 def test_predict_fn(data, model):
-    inference.predict_fn(data, model, context=None)
+    inference.predict_fn(data, model)
     raise NotImplementedError
 
 
 def test_model_fn(model_dir):
-    inference.model_fn(model_dir, context=None)
+    inference.model_fn(model_dir)
     raise NotImplementedError
 
 
-def test_input_fn(input_data):
-    inference.input_fn(input_data)
+def test_input_fn(input_data: bytes):
+    input = inference.input_fn(input_data)
+    args = input[0]
+    kwargs = input[1]
+
     raise NotImplementedError
 
 
@@ -63,5 +63,9 @@ def test_output_fn(prediction, accept):
     raise NotImplementedError
 
 
-def test_model_fn_model_exists():
+def test_download_model(model_dir):
+    raise NotImplementedError
+
+
+def test_to_gpu(model):
     raise NotImplementedError
