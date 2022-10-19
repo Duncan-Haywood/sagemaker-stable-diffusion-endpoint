@@ -1,5 +1,5 @@
 import pickle
-from typing import Union
+from typing import Dict, Tuple, Union
 import boto3
 import logging
 from botocore.exceptions import ClientError
@@ -88,11 +88,11 @@ def get_config():
 
 def serialize_sagemaker_input(*args, **kwargs) -> bytes:
     # pickle supports PIL Image instances
-    bytesobj = pickle.dumps((args, kwargs))
+    bytesobj = pickle.dumps(tuple(args, kwargs))
     return bytesobj
 
 
-def deserialize_sagemaker_input(bytesobj: bytes) -> dict:
+def deserialize_sagemaker_input(bytesobj: bytes) -> Tuple[tuple, dict]:
     kwargs = pickle.loads(bytesobj)
     return kwargs
 

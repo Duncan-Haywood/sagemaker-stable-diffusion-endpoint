@@ -2,6 +2,7 @@ from diffusion_util import util
 import pytest
 import moto
 import boto3
+from io import BytesIO
 
 
 @pytest.fixture
@@ -64,13 +65,13 @@ def test_get_secret(secret_name, create_secret, secret_string):
     assert secret_string == response
 
 
-def test_get_model_repository(config):
-    model_repository = util.get_model_repository(config)
+def test_get_model_repository():
+    model_repository = util.get_model_repository()
     assert model_repository is not None
 
 
-def test_get_huggingface_secret_name(config):
-    secret_name = util.get_huggingface_secret_name(config)
+def test_get_huggingface_secret_name():
+    secret_name = util.get_huggingface_secret_name()
     assert secret_name is not None
 
 

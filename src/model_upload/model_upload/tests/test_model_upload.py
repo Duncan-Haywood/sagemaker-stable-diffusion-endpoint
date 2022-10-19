@@ -1,5 +1,5 @@
 from typeguard import is_typeddict
-from . import upload_model
+from .. import upload_model
 import pytest
 from diffusion_util import util
 
