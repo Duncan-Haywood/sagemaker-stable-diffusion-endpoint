@@ -16,10 +16,10 @@ class ModelSaveStack(Stack):
         super().__init__(scope, id, **kwargs)
 
         model_bucket = s3.Bucket(self, "Modelbucket")
-        upload_model_lambda = ModelLambdaConstruct()
+        upload_model_lambda = ModelUploadLambdaConstruct()
 
 
-class ModelLambdaConstruct(Construct):
+class ModelUploadLambdaConstruct(Construct):
     def __init__(self, scope: Construct, id: str) -> None:
         super().__init__(scope, id)
 
@@ -31,9 +31,5 @@ class ModelLambdaConstruct(Construct):
             code=model_code,
             runtime=lambda_.Runtime.PYTHON_3_9,
             memory_size=10240,
-            # tracing=lambda_.Tracing.ACTIVE,
-            # profiling=True,
-            # vpc=None,
-            # vpc_subnets=None,
         )
         return upload_model_lambda
