@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "diffusion_endpoint"
+name = "endpoint"
 version = "0.1.0"
 description = "Endpoint for stable diffusion endpoint"
 authors = ["Duncan Haywood"]
