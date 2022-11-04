@@ -1,5 +1,6 @@
 # Build an image that can do inference in SageMaker
 # for serving inferences in a stable way.
+# use src/ as context directory
 
 # GPU enabled image
 FROM nvidia/cuda:9.2-cudnn7-runtime-ubuntu18.04
@@ -25,7 +26,9 @@ RUN ln -s /usr/bin/pip3 /usr/bin/pip
 # a significant amount of space. These optimizations save a fair amount of space in the
 # image, which reduces start up time.
 RUN pip install poetry
-COPY pyproject.toml poetry.lock ./
+COPY diffusion_util ./diffusion_util/
+
+COPY endpoint/pyproject.toml endpoint/poetry.lock ./endpoint/
 RUN poetry export --output ./requirements.txt
 RUN pip --no-cache-dir install -r requirements.txt
 
@@ -39,7 +42,7 @@ ENV PYTHONDONTWRITEBYTECODE=TRUE
 ENV PATH="/opt/program:${PATH}"
 
 # Set up the program in the image
-COPY endpoint /opt/program
+COPY endpoint/endpoint /opt/program
 WORKDIR /opt/program
 
 # starts the server which will handle sagemaker requests.
