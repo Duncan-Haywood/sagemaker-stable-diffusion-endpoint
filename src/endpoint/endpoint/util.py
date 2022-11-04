@@ -82,6 +82,12 @@ def get_huggingface_secret_name():
     return secret_name
 
 
+def get_endpoint_name():
+    config = get_config()
+    endpoint_name = config["endpoint_name"]
+    return endpoint_name
+
+
 def get_config():
     return config.config
 
