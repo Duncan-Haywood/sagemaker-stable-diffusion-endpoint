@@ -48,8 +48,7 @@ def upload_file_to_s3(bucket_name: str, local_dir: str, key: str):
     bucket = s3.Bucket(bucket_name)
     response = None
     with open(local_dir, "rb") as data:
-        response = bucket.upload_fileobj(data, key)
-    return response
+        bucket.upload_fileobj(data, key)
 
 
 def download_from_s3(bucket_name: str, local_dir: str, key: str):
@@ -58,16 +57,17 @@ def download_from_s3(bucket_name: str, local_dir: str, key: str):
     bucket = s3.Bucket(bucket_name)
     with open(local_dir, "wb") as file:
         response = bucket.download_fileobj(key, file)
+    return response
 
 
 def get_model_bucket_name():
     config = get_config()
-    raise NotImplementedError
+    return config["model_bucket_name"]
 
 
 def get_model_s3_key():
     config = get_config()
-    raise NotImplementedError
+    return config["model_s3_key"]
 
 
 def get_model_repository():
@@ -88,7 +88,7 @@ def get_config():
 
 def serialize_sagemaker_input(*args, **kwargs) -> bytes:
     # pickle supports PIL Image instances
-    bytesobj = pickle.dumps(tuple(args, kwargs))
+    bytesobj = pickle.dumps((args, kwargs))
     return bytesobj
 
 
