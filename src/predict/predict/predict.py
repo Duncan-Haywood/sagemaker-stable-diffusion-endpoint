@@ -65,7 +65,7 @@ class Predictor:
 
         bytesobj = util.serialize_sagemaker_input(*args, **kwargs)
         bytes_response = self.async_predictor.predict(
-            data=bytesobj, waiter_config=waiter_config
+            data=bytesobj, waiter_config=self.waiter_config
         )
         response = util.deserialize_sagemaker_output(bytes_response)
         return response
