@@ -40,6 +40,14 @@ def accept() -> str:
     raise NotImplementedError
 
 
+def test_download_model(model_dir):
+    raise NotImplementedError
+
+
+def test_to_gpu(model):
+    raise NotImplementedError
+
+
 def test_predict_fn(data, model):
     inference.predict_fn(data, model)
     raise NotImplementedError
@@ -60,12 +68,4 @@ def test_input_fn(input_data: bytes):
 
 def test_output_fn(prediction, accept):
     inference.output_fn(prediction, accept)
-    raise NotImplementedError
-
-
-def test_download_model(model_dir):
-    raise NotImplementedError
-
-
-def test_to_gpu(model):
     raise NotImplementedError
