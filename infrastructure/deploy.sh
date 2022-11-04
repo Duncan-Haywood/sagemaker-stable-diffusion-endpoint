@@ -1,2 +1,4 @@
 aws configure
-cdk synth
+cdk bootstrap
+poetry run cdk synth
+poetry run cdk deploy
