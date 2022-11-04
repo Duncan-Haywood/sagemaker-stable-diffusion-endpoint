@@ -1,5 +1,5 @@
 import typer
-from diffusion_util import util
+from . import util
 
 
 def main():

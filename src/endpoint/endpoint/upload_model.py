@@ -1,7 +1,7 @@
 """Run upload_huggingface_token.py before use -- a dependency."""
 from diffusers import StableDiffusionInpaintPipeline
 import logging
-from diffusion_util import util
+from . import util
 import torch
 
 
@@ -34,19 +34,18 @@ def save_model_local(model, local_dir):
 
 
 def get_config() -> dict:
-    config = util.get_config()
-    huggingface_secret_name = util.get_huggingface_secret_name(config)
-
+    huggingface_secret_name = util.get_huggingface_secret_name()
     return dict(
-        model_id=util.get_model_repository(config),
+        model_id=util.get_model_repository(),
         local_dir="./model",
-        bucket_name=util.get_model_bucket_name(config),
-        key=util.get_model_s3_key(config),
+        bucket_name=util.get_model_bucket_name(),
+        key=util.get_model_s3_key(),
         hugging_face_token=util.get_secret(huggingface_secret_name),
     )
 
 
 def main():
+    """Download model from hugging face model hub and upload to s3 bucket."""
     d = get_config()
     model = load_model(d.model_id, d.hugging_face_token)
     save_model_local(model, d.local_dir)

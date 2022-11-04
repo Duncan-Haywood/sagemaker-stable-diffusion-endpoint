@@ -1,9 +1,6 @@
 """looks to default inference.py for handler overwriting."""
 from sagemaker_inference import model_server
 import subprocess
-import sys
-import shlex
-import os
 from retrying import retry
 from subprocess import CalledProcessError
 from sagemaker_inference import model_server

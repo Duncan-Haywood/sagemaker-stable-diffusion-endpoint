@@ -896,6 +896,18 @@ torchhub = ["filelock", "huggingface-hub (>=0.10.0,<1.0)", "importlib-metadata",
 vision = ["pillow"]
 
 [[package]]
+name = "typeguard"
+version = "2.13.3"
+description = "Run-time type checker for Python"
+category = "dev"
+optional = false
+python-versions = ">=3.5.3"
+
+[package.extras]
+doc = ["sphinx-rtd-theme", "sphinx-autodoc-typehints (>=1.2.0)"]
+test = ["pytest", "typing-extensions", "mypy"]
+
+[[package]]
 name = "typer"
 version = "0.6.1"
 description = "Typer, build great CLIs. Easy to code. Based on Python type hints."
@@ -978,7 +990,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "flake8 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "25df68c2cd1b0eff2dc242ab5b86d47bd3b7c73a1a831809a46b6a55ba801def"
+content-hash = "7765bb42d43a78f22dd60f41a48ce85d51198c1681a5148a191ebce194f96853"
 
 [metadata.files]
 attrs = []
@@ -1231,6 +1243,7 @@ tomli = [
 torch = []
 tqdm = []
 transformers = []
+typeguard = []
 typer = []
 types-toml = []
 typing-extensions = []

@@ -1,6 +1,6 @@
 from typing import Union
 import sagemaker
-from diffusion_util import util
+from . import util
 
 
 class Predictor:

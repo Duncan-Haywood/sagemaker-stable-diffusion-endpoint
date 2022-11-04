@@ -2,7 +2,7 @@
 from diffusers import StableDiffusionInpaintPipeline
 import torch
 from typing import Any, Tuple, Union, Dict
-from diffusion_util import util
+from . import util
 from logging import Logger
 
 logger = Logger(__name__)

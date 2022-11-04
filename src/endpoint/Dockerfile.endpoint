@@ -39,7 +39,7 @@ ENV PYTHONDONTWRITEBYTECODE=TRUE
 ENV PATH="/opt/program:${PATH}"
 
 # Set up the program in the image
-COPY endpoint/endpoint /opt/program
+COPY endpoint /opt/program/
 WORKDIR /opt/program
 
 # starts the server which will handle sagemaker requests.
