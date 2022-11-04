@@ -1,133 +1,171 @@
-from aws_cdk import Stack
-
-from constructs import Construct
-from aws_cdk import aws_sagemaker as sagemaker
-from aws_cdk import aws_s3 as s3
-from aws_cdk import aws_sns as sns
-from aws_cdk import aws_ecr as ecr
+from aws_cdk import Stack, Tags
 from aws_cdk import aws_ecr_assets as ecr_assets
+from aws_cdk import aws_s3 as s3
+from aws_cdk import aws_sagemaker as sagemaker
+from constructs import Construct
+from aws_cdk import aws_iam as iam
 
 
-class EndpointInfrastructureStack(Stack):
+class EndpointStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        endpoint_config = EndpointConifgConstruct(self, "EndpointConfig")
+        # adds resource tags to all resources in this stack for the purposes of IAM access management
+        Tags.of(self).add("Application", "DiffusionEndpoint")
+
+        # model bucket for hosting the model files
+        model_bucket = s3.Bucket(self, "ModelBucket")
+
+        # name of model bucket
+        model_bucket_name = model_bucket.bucket_name
+
+        # async output bucket
+        async_output_bucket = s3.Bucket(
+            self,
+            "OutputBucket",
+        )
+
+        # path of output bucket
+        async_s3_output_path = async_output_bucket.s3_url_for_object()
+
+        # creates role needed for execution of model construct
+        model_role_construct = ModelRoleConstruct(self, "ModelRole")
+        model_execution_role = model_role_construct.model_execution_role
+        execution_role_arn = model_execution_role.role_arn
+
+        # model to be used in endpoint
+        model_construct = ModelConstruct(
+            self,
+            "ModelConstruct",
+            model_bucket_name=model_bucket_name,
+            execution_role_arn=execution_role_arn,
+        )
+        model = model_construct.model
+        model_name = model.attr_model_name
+
+        # config for endpoint
+        endpoint_config_construct = EndpointConfigConstruct(
+            self,
+            "EndpointConfig",
+            async_s3_output_path=async_s3_output_path,
+            model_name=model_name,
+        )
+        endpoint_config = endpoint_config_construct.endpoint_config
+        endpoint_config_name = endpoint_config.attr_endpoint_config_name
 
         # create endpoint
         endpoint = sagemaker.CfnEndpoint(
             self,
             "DiffusionEndpoint",
-            endpoint_config_name=endpoint_config.endpoint_config_name,
+            endpoint_config_name=endpoint_config_name,
         )
 
 
-class EndpointConifgConstruct(Construct):
-    def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
+class EndpointConfigConstruct(Construct):
+    def __init__(
+        self,
+        scope: Construct,
+        construct_id: str,
+        async_s3_output_path: str = "",
+        model_name: str = "",
+        **kwargs
+    ) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        accelerator_type = "eia2.xlarge"
-        instance_type = "ml.t2.xlarge"
+        # type of instance on which the endpoint will run
+        instance_type = "ml.p2.xlarge"
 
-        model = ModelConstruct(self)
-        async_inference_config = AsyncConfigConstruct(self)
+        # name of production variant
+        variant_name = "TODO"
+
+        # which proportion of instances to use with this model -- required paramenter that's not relevant to us
+        initial_variant_weight = 1.0
+
+        # configuration for async output
+        async_inference_config = sagemaker.CfnEndpointConfig.AsyncInferenceConfigProperty(
+            output_config=sagemaker.CfnEndpointConfig.AsyncInferenceOutputConfigProperty(
+                s3_output_path=async_s3_output_path,
+            ),
+        )
 
         # create production deployent config for instances
         prod_variant_config = sagemaker.CfnEndpointConfig.ProductionVariantProperty(
-            model_name=model.model_name,
-            variant_name="production",
-            accelerator_type=accelerator_type,
+            initial_variant_weight=initial_variant_weight,
+            model_name=model_name,
+            variant_name=variant_name,
             initial_instance_count=0,
             instance_type=instance_type,
         )
 
         # wrap in standard config
-        endpoint_config = sagemaker.CfnEndpointConfig(
+        self.endpoint_config = sagemaker.CfnEndpointConfig(
             self,
             "DiffusionEndpointConfig",
             async_inference_config=async_inference_config,
             production_variants=[prod_variant_config],
         )
 
-        return endpoint_config
-
 
 class ModelConstruct(Construct):
-    def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
+    def __init__(
+        self,
+        scope: Construct,
+        construct_id: str,
+        model_bucket_name: str = "",
+        execution_role_arn: str = "",
+        **kwargs
+    ) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        # model bucket
-        model_bucket = s3.Bucket(self, "ModelBucket")
+        # docker image with inference code and server for sagemaker predictions
+        image = ecr_assets.DockerImageAsset(
+            self, "ModelImage", directory="../src/", file="endpoint/Dockerfile.endpoint"
+        )
+        image_uri = image.image_uri
+        # environment to pass to container
+        environment = {"MODEL_BUCKET_NAME": model_bucket_name}
 
         # container
-        environment = None
         container_definition_property = sagemaker.CfnModel.ContainerDefinitionProperty(
             environment=environment,
-            image=NotImplemented,
-            image_config=sagemaker.CfnModel.ImageConfigProperty(
-                repository_access_mode="repositoryAccessMode",
-                # the properties below are optional
-                repository_auth_config=sagemaker.CfnModel.RepositoryAuthConfigProperty(
-                    repository_credentials_provider_arn="repositoryCredentialsProviderArn"
-                ),
-            ),
-            inference_specification_name="inferenceSpecificationName",
-            mode="mode",
-            model_data_url="modelDataUrl",
-            model_package_name="modelPackageName",
+            image=image_uri,
+        )
+
+        # creates model with execution role and container defenition
+        self.model = sagemaker.CfnModel(
+            self,
+            "Model",
+            execution_role_arn=execution_role_arn,
+            primary_container=container_definition_property,
         )
 
 
-class AsyncConfigConstruct(Construct):
+class ModelRoleConstruct(Construct):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        # create output bucket
-        output_bucket = s3.Bucket(
+        # managed policy that allows all access to resources with the endpoint tag
+        EndpointApplicationAllAccessManagedPolicy = iam.ManagedPolicy(
             self,
-            "OutputBucket",
-            # block_public_access=s3.BlockPublicAccess.BLOCK_ALL
-        )
-        s3_output_path = output_bucket.bucketWebsiteUrl
-
-        # create notifications topics
-        success_topic = sns.Topic(self, "DiffusionSuccess")
-        error_topic = sns.Topic(self, "DiffusionError")
-
-        # add topics to async config
-        async_notification_config = (
-            sagemaker.CfnEndpointConfig.AsyncInferenceNotificationConfigProperty(
-                error_topic=error_topic.topic_name,
-                success_topic=success_topic.topic_name,
-            )
-        )
-        # wrap in async config
-        async_inference_config = (
-            sagemaker.CfnEndpointConfig.AsyncInferenceConfigProperty(
-                output_config=sagemaker.CfnEndpointConfig.AsyncInferenceOutputConfigProperty(
-                    s3_output_path=s3_output_path,  # TODO test
-                    notification_config=async_notification_config,
-                ),
-            ),
+            "EndpointApplicationAllAccessManagedPolicy",
+            statements=[
+                iam.PolicyStatement(
+                    actions=["*"],
+                    conditions={
+                        "StringEquals": {
+                            "aws:ResourceTag/Application": "DiffusionEndpoint"
+                        }
+                    },
+                    resources=["*"],
+                )
+            ],
         )
 
-        return async_inference_config
-
-
-class ModelContainer(Construct):
-    def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
-        super().__init__(scope, construct_id, **kwargs)
-        NotImplemented
-        """Deep Learning AMI GPU PyTorch 1.12.? ${PATCH_VERSION} (Amazon Linux 2) ${YYYY-MM-DD}
-        
-        Supported EC2 Instances: G3, P3, P3dn, P4d, G5, G4dn
-        
-        https://aws.amazon.com/releasenotes/aws-deep-learning-ami-gpu-pytorch-1-12-amazon-linux-2/"""
-
-        repository = ecr.Repository(
+        # role needed for model
+        # TODO reduce access to only what's needed.
+        self.model_execution_role = iam.Role(
             self,
-            "DiffusionEndpointRepository",
-            image_scan_on_push=True,
+            "ModelExecutionRole",
+            assumed_by=iam.ServicePrincipal("sagemaker.amazonaws.com"),
+            managed_policies=[EndpointApplicationAllAccessManagedPolicy],
         )
-
-        image = ecr_assets  # TODO
