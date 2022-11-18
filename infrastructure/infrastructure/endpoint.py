@@ -4,25 +4,24 @@ from aws_cdk import aws_s3 as s3
 from aws_cdk import aws_sagemaker as sagemaker
 from constructs import Construct
 from aws_cdk import aws_iam as iam
+from aws_cdk import RemovalPolicy
 
 
 class EndpointStack(Stack):
-    def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
+    def __init__(
+        self, scope: Construct, construct_id: str, model_bucket_name=None, **kwargs
+    ) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         # adds resource tags to all resources in this stack for the purposes of IAM access management
         Tags.of(self).add("Application", "DiffusionEndpoint")
 
-        # model bucket for hosting the model files
-        model_bucket = s3.Bucket(self, "ModelBucket")
-
-        # name of model bucket
-        self.model_bucket_name = model_bucket.bucket_name
-
         # async output bucket
         async_output_bucket = s3.Bucket(
             self,
             "OutputBucket",
+            auto_delete_objects=True,
+            removal_policy=RemovalPolicy.DESTROY,
         )
 
         # path of output bucket
@@ -37,7 +36,7 @@ class EndpointStack(Stack):
         model_construct = ModelConstruct(
             self,
             "ModelConstruct",
-            model_bucket_name=self.model_bucket_name,
+            model_bucket_name=model_bucket_name,
             execution_role_arn=execution_role_arn,
         )
         model = model_construct.model

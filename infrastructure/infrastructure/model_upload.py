@@ -1,35 +1,34 @@
 from aws_cdk import aws_s3 as s3
-from aws_cdk import Stack
-import typing
+from aws_cdk import Stack, RemovalPolicy
 from constructs import Construct
 from aws_cdk import aws_lambda as lambda_
 
 
-class ModelSaveStack(Stack):
-    def __init__(
-        self,
-        scope: typing.Optional[Construct] = None,
-        id: typing.Optional[str] = None,
-        **kwargs
-    ) -> None:
-
+class ModelUploadStack(Stack):
+    def __init__(self, scope: Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
+        # model bucket for hosting the model files
+        model_bucket = s3.Bucket(
+            self,
+            "ModelBucket",
+            auto_delete_objects=True,
+            removal_policy=RemovalPolicy.DESTROY,
+        )
+        # name of model bucket
+        self.model_bucket_name = model_bucket.bucket_name
 
-        model_bucket = s3.Bucket(self, "Modelbucket")
-        upload_model_lambda = ModelUploadLambdaConstruct()
-
-
-class ModelUploadLambdaConstruct(Construct):
-    def __init__(self, scope: Construct, id: str) -> None:
-        super().__init__(scope, id)
-
-        dockerfile_path = "./"
-        model_code = lambda_.DockerImageCode.from_asset_image(dockerfile_path)
-        upload_model_lambda = lambda_.DockerImageFunction(
+        # Dockerfile
+        dockerfile_path = "../src/endpoint/"
+        file = "Dockerfile.model_upload"
+        model_code = lambda_.DockerImageCode.from_asset_image(
+            dockerfile_path, file=file
+        )
+        # Lambda function
+        self.upload_model_lambda = lambda_.DockerImageFunction(
             self,
             "ModelUploadFn",
             code=model_code,
-            runtime=lambda_.Runtime.PYTHON_3_9,
+            runtime=lambda_.Runtime.PYTHON_3_8,
             memory_size=10240,
         )
-        return upload_model_lambda
+        self.function_name = self.upload_model_lambda.function_name
