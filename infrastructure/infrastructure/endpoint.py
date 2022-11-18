@@ -17,7 +17,7 @@ class EndpointStack(Stack):
         model_bucket = s3.Bucket(self, "ModelBucket")
 
         # name of model bucket
-        model_bucket_name = model_bucket.bucket_name
+        self.model_bucket_name = model_bucket.bucket_name
 
         # async output bucket
         async_output_bucket = s3.Bucket(
@@ -37,7 +37,7 @@ class EndpointStack(Stack):
         model_construct = ModelConstruct(
             self,
             "ModelConstruct",
-            model_bucket_name=model_bucket_name,
+            model_bucket_name=self.model_bucket_name,
             execution_role_arn=execution_role_arn,
         )
         model = model_construct.model
@@ -54,11 +54,12 @@ class EndpointStack(Stack):
         endpoint_config_name = endpoint_config.attr_endpoint_config_name
 
         # create endpoint
-        endpoint = sagemaker.CfnEndpoint(
+        self.endpoint = sagemaker.CfnEndpoint(
             self,
             "DiffusionEndpoint",
             endpoint_config_name=endpoint_config_name,
         )
+        self.endpoint_name = self.endpoint.attr_endpoint_name
 
 
 class EndpointConfigConstruct(Construct):
@@ -78,7 +79,7 @@ class EndpointConfigConstruct(Construct):
         # name of production variant
         variant_name = "TODO"
 
-        # which proportion of instances to use with this model -- required paramenter that's not relevant to us
+        # which proportion of instances to use with this model on scale [0,1.0] -- required paramenter that's not relevant to us
         initial_variant_weight = 1.0
 
         # configuration for async output
@@ -122,6 +123,7 @@ class ModelConstruct(Construct):
             self, "ModelImage", directory="../src/", file="endpoint/Dockerfile.endpoint"
         )
         image_uri = image.image_uri
+
         # environment to pass to container
         environment = {"MODEL_BUCKET_NAME": model_bucket_name}
 
