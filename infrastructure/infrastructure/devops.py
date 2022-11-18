@@ -3,6 +3,7 @@ from aws_cdk import Stack, pipelines, Stage
 from infrastructure.endpoint import EndpointStack
 from infrastructure.model_upload import ModelUploadStack
 
+
 OWNER_REPO = "Duncan-Haywood/diffusion-endpoint"
 BRANCH = "main"
 
@@ -30,7 +31,7 @@ class PipelineStack(Stack):
             ),
         )
         self.pipeline.add_stage(
-            EndpointStage(self, "TestStage"),
+            EndpointStage(self, "TestStage", production=False),
             post=[
                 pipelines.CodeBuildStep(
                     "IntegrationTest",
@@ -44,14 +45,14 @@ class PipelineStack(Stack):
             ],
         )
         self.pipeline.add_stage(
-            EndpointStage(self, "ProdStage"),
+            EndpointStage(self, "ProdStage", production=True),
             pre=[pipelines.ManualApprovalStep("PromoteToProd")],
         )
 
 
 class EndpointStage(Stage):
     def __init__(
-        self, scope: Construct, construct_id: str, production: bool = False**kwargs
+        self, scope: Construct, construct_id: str, production: bool = False, **kwargs
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
         # model upload
