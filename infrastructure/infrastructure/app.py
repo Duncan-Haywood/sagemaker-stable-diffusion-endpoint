@@ -2,13 +2,12 @@
 
 import aws_cdk as cdk
 
-from .devops import DevPipelineStack, ProdPipelineStack
+from infrastructure.devops import PipelineStack
 
 
 def main():
     app = cdk.App()
-    DevPipelineStack(app, "DevPipeline")
-    ProdPipelineStack(app, "DevPipeline")
+    PipelineStack(app, "Pipeline")
     cloud_assembly = app.synth()
     return cloud_assembly
 
