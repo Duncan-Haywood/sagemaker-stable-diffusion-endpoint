@@ -31,7 +31,7 @@ class PipelineStack(Stack):
         self.pipeline.add_stage(
             EndpointStage(self, "TestStage"),
             post=[
-                pipelines.ShellStep(
+                pipelines.CodeBuildStep(
                     "IntegrationTest",
                     commands=[
                         "cd src/endpoint",
@@ -47,8 +47,7 @@ class PipelineStack(Stack):
             pre=[pipelines.ManualApprovalStep("PromoteToProd")],
         )
 
-
 class EndpointStage(Stage):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
-        self.endpoint_stack = EndpointStack(self, "TestEndpointStack")
+        self.endpoint_stack = EndpointStack(self, "EndpointStack")
