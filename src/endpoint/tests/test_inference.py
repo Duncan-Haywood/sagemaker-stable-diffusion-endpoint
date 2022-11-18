@@ -39,25 +39,25 @@ def prediction() -> Image:
 def accept() -> str:
     raise NotImplementedError
 
-
+@pytest.mark.skip(reason="Not implemented")
 def test_download_model(model_dir):
     raise NotImplementedError
 
-
+@pytest.mark.skip(reason="Not implemented")
 def test_to_gpu(model):
     raise NotImplementedError
 
-
+@pytest.mark.skip(reason="Not implemented")
 def test_predict_fn(data, model):
     inference.predict_fn(data, model)
     raise NotImplementedError
 
-
+@pytest.mark.skip(reason="Not implemented")
 def test_model_fn(model_dir):
     inference.model_fn(model_dir)
     raise NotImplementedError
 
-
+@pytest.mark.skip(reason="Not implemented")
 def test_input_fn(input_data: bytes):
     input = inference.input_fn(input_data)
     args = input[0]
@@ -65,7 +65,7 @@ def test_input_fn(input_data: bytes):
 
     raise NotImplementedError
 
-
+@pytest.mark.skip(reason="Not implemented")
 def test_output_fn(prediction, accept):
     inference.output_fn(prediction, accept)
     raise NotImplementedError
