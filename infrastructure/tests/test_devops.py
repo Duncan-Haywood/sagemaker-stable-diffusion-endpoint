@@ -1,6 +1,6 @@
 import aws_cdk as core
 import aws_cdk.assertions as assertions
-from devops.devops_stack import PipelineStack
+from infrastructure.devops import PipelineStack
 
 
 def test_pipeline_created():
