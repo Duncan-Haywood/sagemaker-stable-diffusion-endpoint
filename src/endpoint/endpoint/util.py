@@ -76,6 +76,16 @@ def download_from_s3(bucket_name: str, local_dir: str, key: str):
         logger.exception("file download failed")
 
 
+def file_exists(bucket_name: str, key: str) -> bool:
+    """checks whether a file exists; only works with buckets with fewer than 1000 files"""
+    s3 = boto3.client("s3")
+    response = s3.list_objects_v2(Bucket=bucket_name)
+    contents = response["Contents"]
+    keys = [obj["Key"] for obj in contents]
+    exists = key in keys
+    return exists
+
+
 def get_model_bucket_name():
     try:
         model_bucket_name = os.getenv("model_bucket_name")
@@ -112,6 +122,7 @@ def get_hugging_face_token():
 
 
 def get_endpoint_name():
+    """gets endpoint name from ssm parameter store"""
     try:
         is_prod_bool = os.getenv("production", True)
         env = "production" if is_prod_bool else "test"

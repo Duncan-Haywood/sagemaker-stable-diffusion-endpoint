@@ -43,13 +43,24 @@ def get_config() -> dict:
     )
 
 
+def model_exists(bucket_name, key) -> bool:
+    """checks whether model already exists in bucket"""
+    exists = util.file_exists(bucket_name, key)
+    if exists:
+        logger.info("model already exists")
+    else:
+        logger.info("model doesn't exist already")
+    return exists
+
+
 def main():
     """Download model from hugging face model hub and upload to s3 bucket."""
     d = get_config()
-    model = load_model(d.model_id, d.hugging_face_token)
-    save_model_local(model, d.local_dir)
-    util.upload_file_to_s3(d.bucket_name, d.local_dir, d.key)
-    logger.info("model uploaded to s3")
+    if not model_exists(d.bucket_name, d.key):
+        model = load_model(d.model_id, d.hugging_face_token)
+        save_model_local(model, d.local_dir)
+        util.upload_file_to_s3(d.bucket_name, d.local_dir, d.key)
+        logger.info("model uploaded to s3")
 
 
 def lambda_handler(event, context):
