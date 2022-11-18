@@ -1,13 +1,14 @@
 """Run upload_huggingface_token.py before use -- a dependency."""
 from diffusers import StableDiffusionInpaintPipeline
-import logging
 from . import util
 import torch
+from .logger import get_logger
+
+logger = get_logger(__name__)
 
 
 def load_model(model_id, hugging_face_token):
-    """loads model from HuggingFace into memory"""
-    model = None
+    """loads model from HuggingFace model hub into memory"""
     try:
         model = StableDiffusionInpaintPipeline.from_pretrained(
             model_id,
@@ -15,32 +16,30 @@ def load_model(model_id, hugging_face_token):
             revision="fp16",
             torch_dtype=torch.float16,
         )
-        logging.info("model_download succeeded")
-    except Exception as e:
-        logging.exception("Failed model download")
-        raise e
-    finally:
+        logger.info("model_download succeeded")
         return model
+    except Exception as e:
+        logger.exception("Failed model download")
+        raise e
 
 
 def save_model_local(model, local_dir):
     """saves model to local device"""
     try:
         model.save_pretrained(local_dir)
-        logging.info("model save succeeded")
+        logger.info("model save succeeded")
     except Exception as e:
-        logging.exception("model save failed")
+        logger.exception("model save failed")
         raise e
 
 
 def get_config() -> dict:
-    huggingface_secret_name = util.get_huggingface_secret_name()
     return dict(
         model_id=util.get_model_repository(),
         local_dir="./model",
         bucket_name=util.get_model_bucket_name(),
         key=util.get_model_s3_key(),
-        hugging_face_token=util.get_secret(huggingface_secret_name),
+        hugging_face_token=util.get_hugging_face_token(),
     )
 
 
@@ -50,6 +49,7 @@ def main():
     model = load_model(d.model_id, d.hugging_face_token)
     save_model_local(model, d.local_dir)
     util.upload_file_to_s3(d.bucket_name, d.local_dir, d.key)
+    logger.info("model uploaded to s3")
 
 
 def lambda_handler(event, context):

@@ -1,6 +1,9 @@
 from typing import Union
 import sagemaker
 from . import util
+from .logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class Predictor:
@@ -11,6 +14,7 @@ class Predictor:
         self.waiter_config = sagemaker.async_inference.waiter_config.WaiterConfig(
             delay=3
         )
+        logger.info("Predictor initialized")
 
     def predict(self, *args, **kwargs) -> Union[dict, tuple]:
         """Args + kwargs in data (namedtuple)
@@ -64,8 +68,12 @@ class Predictor:
             (nsfw) content, according to the `safety_checker`."""
 
         bytesobj = util.serialize_sagemaker_input(*args, **kwargs)
+        logger.info("input serialized")
+        logger.info("starting predict call")
         bytes_response = self.async_predictor.predict(
             data=bytesobj, waiter_config=self.waiter_config
         )
+        logger.info("response returned")
         response = util.deserialize_sagemaker_output(bytes_response)
+        logger.info("response deserialized")
         return response

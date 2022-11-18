@@ -4,6 +4,9 @@ import subprocess
 from retrying import retry
 from subprocess import CalledProcessError
 from sagemaker_inference import model_server
+from .logger import get_logger
+
+logger = get_logger(__name__)
 
 
 def _retry_if_error(exception):
@@ -24,6 +27,7 @@ def main():
     # start server
     _start_mms()
     # prevent docker exit -- might not be needed in async version when shutting down constantly
+    logger.info("server started")
     subprocess.call(["tail", "-f", "/dev/null"])
 
 

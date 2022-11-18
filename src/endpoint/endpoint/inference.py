@@ -3,9 +3,9 @@ from diffusers import StableDiffusionInpaintPipeline
 import torch
 from typing import Any, Tuple, Union, Dict
 from . import util
-from logging import Logger
+from .logger import get_logger
 
-logger = Logger(__name__)
+logger = get_logger(__name__)
 
 
 def download_model(local_dir: str):
@@ -15,15 +15,17 @@ def download_model(local_dir: str):
     #     logger.info("model already downloaded")
     # else:
     bucket_name = util.get_model_bucket_name()
-    key = util.get_model_s3_key(config)
+    key = util.get_model_s3_key()
     util.download_from_s3(bucket_name, local_dir, key)
     logger.info("model downloaded from s3")
 
 
 def to_gpu(model: StableDiffusionInpaintPipeline) -> StableDiffusionInpaintPipeline:
     """Casts torch model to gpu if available."""
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device_type = "cuda:0" if torch.cuda.is_available() else "cpu"
+    device = torch.device(device_type)
     model.to(device)
+    logger.info("model casted to %s" % device_type)
     return model
 
 
@@ -70,12 +72,14 @@ def predict_fn(
     args = args_kwargs_tuple[0]
     kwargs = args_kwargs_tuple[1]
     predictions = model(*args, **kwargs)
+    logger.info("predictions created")
     return predictions
 
 
 def input_fn(input_data: bytes) -> Tuple[tuple, dict]:
     """Called on the data passed by sagemaker.Predictor().predict() and passes results to predict_fn"""
     args_kwargs_tuple = util.deserialize_sagemaker_input(input_data)
+    logger.info("input deserialized")
     return args_kwargs_tuple
 
 
@@ -85,4 +89,5 @@ def output_fn(predictions: Union[dict, tuple], accept: str) -> bytes:
     Args:
         accept: can be ignored since the function from which this is called will handle it"""
     predicition_bytes = util.serialize_sagemaker_output(predictions)
+    logger.info("output serialized")
     return predicition_bytes
