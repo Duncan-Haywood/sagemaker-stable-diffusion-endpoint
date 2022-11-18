@@ -1,13 +1,16 @@
 import pickle
 from typing import Dict, Tuple, Union
 import boto3
-import logging
 from botocore.exceptions import ClientError
 from . import config
+import os
+from .logger import get_logger
+
+logger = get_logger(__name__)
 
 
 def create_secret(secret_name: str, secret_string: str, description: str = ""):
-    """Creates secret with error handling."""
+    """Creates secret with error handling."""  # TODO switch to ssm
     sm = boto3.client("secretsmanager")
     response = None
     try:
@@ -16,18 +19,18 @@ def create_secret(secret_name: str, secret_string: str, description: str = ""):
             Description=description,
             SecretString=secret_string,
         )
-        logging.info("secret upload %s", response["ReplicationStatus"][0]["Status"])
+        logger.info("secret upload %s", response["ReplicationStatus"][0]["Status"])
     except ClientError as error:
         if error.response["Error"]["Code"] == "ResourceExistsException":
             response = sm.put_secret_value(
                 SecretId=secret_name, SecretString=secret_string
             )
-            logging.info("secret exists, updated secret")
+            logger.info("secret exists, updated secret")
         else:
-            logging.exception("")
+            logger.exception("")
             raise error
     except Exception as e:
-        logging.exception("")
+        logger.exception("secret upload failed")
         raise e
     finally:
         return response
@@ -36,33 +39,53 @@ def create_secret(secret_name: str, secret_string: str, description: str = ""):
 def get_secret(secret_name):
     """return secret value from secrets manager with secret_name as name of secret"""
     sm = boto3.client("secretsmanager")
-    logging.info("ssm client connected")
-    response = sm.get_secret_value(SecretId=secret_name)
-    secret = response["SecretString"]
-    return secret
+    logger.info("secretsmanager client connected")
+    try:
+        response = sm.get_secret_value(SecretId=secret_name)
+        secret = response["SecretString"]
+        logger.info("secret retreived")
+        return secret
+    except Exception as e:
+        logger.exception("secret not retrieved")
+        raise e
 
 
 def upload_file_to_s3(bucket_name: str, local_dir: str, key: str):
     """uploads file to s3"""
-    s3 = boto3.resource("s3")
-    bucket = s3.Bucket(bucket_name)
-    response = None
-    with open(local_dir, "rb") as data:
-        bucket.upload_fileobj(data, key)
+    try:
+        s3 = boto3.resource("s3")
+        bucket = s3.Bucket(bucket_name)
+        with open(local_dir, "rb") as data:
+            bucket.upload_fileobj(data, key)
+        logger.info("file upload succeeded")
+    except Exception as e:
+        logger.exception("file upload failed")
+        raise e
 
 
 def download_from_s3(bucket_name: str, local_dir: str, key: str):
     """download file from s3"""
-    s3 = boto3.resource("s3")
-    bucket = s3.Bucket(bucket_name)
-    with open(local_dir, "wb") as file:
-        response = bucket.download_fileobj(key, file)
-    return response
+    try:
+        s3 = boto3.resource("s3")
+        bucket = s3.Bucket(bucket_name)
+        with open(local_dir, "wb") as file:
+            response = bucket.download_fileobj(key, file)
+        logger.info("file download succeeded")
+        return response
+    except Exception as e:
+        logger.exception("file download failed")
 
 
 def get_model_bucket_name():
-    config = get_config()
-    return config["model_bucket_name"]
+    try:
+        model_bucket_name = os.getenv("model_bucket_name")
+        if model_bucket_name is None:
+            raise Exception("model_bucket_name in environment is not set")
+        logger.info("succeeded")
+        return model_bucket_name
+    except Exception as e:
+        logger.exception("failed")
+        raise e
 
 
 def get_model_s3_key():
@@ -82,10 +105,24 @@ def get_huggingface_secret_name():
     return secret_name
 
 
+def get_hugging_face_token():
+    secret_name = get_huggingface_secret_name()
+    hugging_face_token = get_secret(secret_name)
+    return hugging_face_token
+
+
 def get_endpoint_name():
-    config = get_config()
-    endpoint_name = config["endpoint_name"]
-    return endpoint_name
+    try:
+        is_prod_bool = os.getenv("production", True)
+        env = "production" if is_prod_bool else "test"
+        param_store_name = f"endpoint_name/{env}"
+        ssm = boto3.client("ssm")
+        endpoint_name = ssm.get_parameter(Name=param_store_name)
+        logger.info("get endpoint name succeeded")
+        return endpoint_name
+    except Exception as e:
+        logger.exception("get endpoint name failed")
+        raise e
 
 
 def get_config():
