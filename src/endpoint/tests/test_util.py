@@ -88,6 +88,7 @@ def test_download_from_s3(bucket_name, local_dir, key, output_dir):
         with open(output_dir, "r") as file:
             assert str(file.read()) == "test"
 
+
 @pytest.mark.skip(reason="Not implemented")
 def test_get_model_bucket_name():
     result = util.get_model_bucket_name()
@@ -167,10 +168,13 @@ def test_deserialize_sagemaker_output(output_bytesobj):
     response = util.deserialize_sagemaker_output(output_bytesobj)
     assert type(response) == tuple
 
+
 @pytest.mark.skip(reason="Not implemented")
 def test_get_endpoint_name():
     name = util.get_endpoint_name()
     assert name is not None
+
+
 @pytest.mark.skip(reason="Not implemented")
 def test_file_exists():
     raise NotImplementedError

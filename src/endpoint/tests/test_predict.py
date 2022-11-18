@@ -5,6 +5,7 @@ from moto import mock_sagemaker
 
 integration = pytest.mark.skipif("not config.getoption('integration')")
 
+
 @pytest.mark.skip(reason="Not implemented; needs env setup")
 def test_init():
     with mock_sagemaker():

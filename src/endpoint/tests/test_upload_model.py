@@ -39,6 +39,7 @@ def model(model_id, hugging_face_token):
 def test_save_model_local(model, local_dir):
     response = upload_model.save_model_local(model, local_dir)
 
+
 @pytest.mark.skip(reason="Not implemented")
 def test_get_config():
     d = upload_model.get_config()
@@ -57,7 +58,8 @@ def test_lambda_handler():
     upload_model.lambda_handler(None, None)
     raise NotImplementedError
 
+
 @pytest.mark.skip(reason="Not implemented")
-def test_model_exists():#bucket_name, key)
+def test_model_exists():  # bucket_name, key)
     # model_exists(bucket_name, key)
     raise NotImplementedError
