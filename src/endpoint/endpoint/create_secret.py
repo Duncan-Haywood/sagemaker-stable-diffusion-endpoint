@@ -1,6 +1,6 @@
 import typer
-from . import util
-from .logger import get_logger
+from endpoint import util
+from endpoint.logger import get_logger
 
 logger = get_logger(__name__)
 
