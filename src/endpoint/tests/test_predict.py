@@ -38,7 +38,6 @@ def test_predict(predictor, prompt, init_image):
         sfw = response[1]
         assert type(images) == list
         assert type(sfw) == list
-        assert type(images[0]) is not None # not empty
+        assert type(images[0]) is not None  # not empty
         assert type(images[0]) == Image.Image
         assert type(sfw) == bool
-

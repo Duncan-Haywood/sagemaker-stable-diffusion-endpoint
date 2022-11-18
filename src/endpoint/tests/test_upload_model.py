@@ -3,6 +3,7 @@ import pytest
 from endpoint import util
 from moto import mock_s3
 
+
 @pytest.fixture
 def model_id():
     return util.get_model_repository()
@@ -23,6 +24,7 @@ def test_load_model(model_id, hugging_face_token):
     model = upload_model.load_model(model_id, hugging_face_token)
     assert model is not None
 
+
 @pytest.fixture
 def local_dir():
     return "./"
@@ -42,11 +44,13 @@ def test_get_config():
     d = upload_model.get_config()
     assert type(d) == dict
 
+
 @pytest.mark.skip(reason="Large file download into RAM")
 def test_main():
     with mock_s3():
         upload_model.main()
     raise NotImplementedError
+
 
 @pytest.mark.skip(reason="Large file download into RAM")
 def test_lambda_handler():

@@ -76,6 +76,7 @@ def output_dir(tmp_path_factory):  # TODO
     path = tmp_path_factory.mktemp("test") / "test_output.txt"
     return path
 
+
 def test_download_from_s3(bucket_name, local_dir, key, output_dir):
     with moto.mock_s3():
         s3 = boto3.resource("s3")
@@ -83,7 +84,7 @@ def test_download_from_s3(bucket_name, local_dir, key, output_dir):
         bucket.create()
         util.upload_file_to_s3(bucket_name, local_dir, key)
         util.download_from_s3(bucket_name, output_dir, key)
-        # test 
+        # test
         with open(output_dir, "r") as file:
             assert str(file.read()) == "test"
 

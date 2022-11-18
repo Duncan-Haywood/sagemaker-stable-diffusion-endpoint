@@ -5,5 +5,5 @@ config = dict(
     model_s3_key=NotImplemented,
     input_bucket_name=NotImplemented,
     output_bucket_name=NotImplemented,
-    endpoint_name=NotImplemented
+    endpoint_name=NotImplemented,
 )
