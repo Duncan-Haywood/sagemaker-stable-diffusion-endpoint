@@ -23,7 +23,7 @@ class PipelineStack(Stack):
                 commands=[
                     "cd infrastructure",
                     "pip install poetry",
-                    "poetry export -o requirements.txt",
+                    "poetry export  --without-hashes -o requirements.txt",
                     "pip install -r requirements.txt",
                     "npm install -g aws-cdk",
                     "npx cdk synth",
