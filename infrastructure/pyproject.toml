@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "infrastructure"
-version = "0.2.0"
+version = "1.0.0"
 description = "infrastructure as code for diffusion endpoint"
 authors = ["Duncan Haywood"]
 license = "Prop"
