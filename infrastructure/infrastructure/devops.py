@@ -1,5 +1,5 @@
 from constructs import Construct
-from aws_cdk import Stack, pipelines, Stage
+from aws_cdk import Stack, pipelines, Stage, CfnOutput
 from infrastructure.endpoint import EndpointStack
 from infrastructure.model_upload import ModelUploadStack
 
@@ -58,10 +58,14 @@ class EndpointStage(Stage):
         # model upload
         self.model_upload_stack = ModelUploadStack(self, "ModelUploadStack")
         model_bucket_name = self.model_upload_stack.model_bucket_name
-        lambda_function_name = self.model_upload_stack.function_name
+        lambda_function_name = CfnOutput(
+            self.model_upload_stack,
+            "Output",
+            value=self.model_upload_stack.function_name,
+        )
         # upload the model after the infrastructure for the lambda is deployed
         pipelines.StackSteps(
-            self.model_upload_stack,
+            stack=self.model_upload_stack,
             post=[
                 pipelines.CodeBuildStep(
                     "TriggerModelUploadLambda",
@@ -80,9 +84,11 @@ class EndpointStage(Stage):
             self, "EndpointStack", model_bucket_name=model_bucket_name
         )
         self.endpoint_stack.add_dependency(self.model_upload_stack)
-        self.endpoint_name = self.endpoint_stack.endpoint_name
+        self.endpoint_name = CfnOutput(
+            self.endpoint_stack, "Output", value=self.endpoint_stack.endpoint_name
+        )
         pipelines.StackSteps(
-            self.model_upload_stack,
+            stack=self.model_upload_stack,
             post=[
                 pipelines.CodeBuildStep(
                     "SetEndpointNameInParameterStore",
@@ -92,8 +98,10 @@ class EndpointStage(Stage):
                         "poetry install",
                         "poetry run python ./infrastructure/param_store_endpoint_name.py",
                     ],
+                    env={
+                        "production": str(production),
+                    },
                     env_from_cfn_outputs={
-                        "production": production,
                         "endpoint_name": self.endpoint_name,
                     },
                 )

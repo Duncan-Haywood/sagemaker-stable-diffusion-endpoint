@@ -10,7 +10,7 @@ logger = get_logger(__name__)
 
 
 def create_secret(secret_name: str, secret_string: str, description: str = ""):
-    """Creates secret with error handling."""  # TODO switch to ssm
+    """Creates secret with error handling."""
     sm = boto3.client("secretsmanager")
     response = None
     try:
@@ -19,7 +19,7 @@ def create_secret(secret_name: str, secret_string: str, description: str = ""):
             Description=description,
             SecretString=secret_string,
         )
-        logger.info("secret upload %s", response["ReplicationStatus"][0]["Status"])
+        logger.info("secret uploaded")
     except ClientError as error:
         if error.response["Error"]["Code"] == "ResourceExistsException":
             response = sm.put_secret_value(
@@ -125,7 +125,7 @@ def get_endpoint_name():
     """gets endpoint name from ssm parameter store"""
     try:
         is_prod_bool = os.getenv("production", True)
-        env = "production" if is_prod_bool else "test"
+        env = "production" if is_prod_bool=="True" or is_prod_bool else "test"
         param_store_name = f"endpoint_name/{env}"
         ssm = boto3.client("ssm")
         endpoint_name = ssm.get_parameter(Name=param_store_name)

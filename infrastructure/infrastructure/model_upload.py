@@ -20,7 +20,7 @@ class ModelUploadStack(Stack):
         # Dockerfile
         dockerfile_path = "../src/endpoint/"
         file = "Dockerfile.model_upload"
-        model_code = lambda_.DockerImageCode.from_asset_image(
+        model_code = lambda_.DockerImageCode.from_image_asset(
             dockerfile_path, file=file
         )
         # Lambda function
@@ -28,7 +28,6 @@ class ModelUploadStack(Stack):
             self,
             "ModelUploadFn",
             code=model_code,
-            runtime=lambda_.Runtime.PYTHON_3_8,
             memory_size=10240,
         )
         self.function_name = self.upload_model_lambda.function_name
