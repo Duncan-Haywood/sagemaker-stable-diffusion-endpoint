@@ -24,6 +24,7 @@ class PipelineStack(Stack):
                     "cd infrastructure",
                     "pip install poetry",
                     "poetry install",
+                    "npm install -g aws-cdk"
                     "poetry run cdk synth",
                 ],
             ),
