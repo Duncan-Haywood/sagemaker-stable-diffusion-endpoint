@@ -32,6 +32,15 @@ class PipelineStack(Stack):
             EndpointStage(self, "TestStage", production=False),
             post=[
                 pipelines.CodeBuildStep(
+                    "UnitTest",
+                    commands=[
+                        "cd src/endpoint",
+                        "pip install poetry",
+                        "poetry install",
+                        "poetry run pytest",
+                    ],
+                ),
+                pipelines.CodeBuildStep(
                     "IntegrationTest",
                     commands=[
                         "cd src/endpoint",
