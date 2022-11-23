@@ -23,5 +23,5 @@ response = predictor.predict(args, kwargs) # see the file for documentation on a
 
 # development notes
 
-- still lots of unimplemented unit testing that could be added. that's mostly why the tests are failing from as much as I know. Right now, it's relying on a single integration test to hold it all together.
+- still lots of unimplemented unit testing that could be added. that's why so many tests skip. Right now, it's relying on a single integration test to hold it all together.
 
