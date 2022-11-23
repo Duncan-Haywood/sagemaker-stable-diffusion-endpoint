@@ -2,7 +2,7 @@
 
 ## general
 
-- install projects with `pip install poetry; poetry install; poetry run ./endpoint/file_name.py`
+- install projects with `pip install poetry; poetry install; poetry run python ./endpoint/file_name.py`
 
 ## for endpoint deployment
 
