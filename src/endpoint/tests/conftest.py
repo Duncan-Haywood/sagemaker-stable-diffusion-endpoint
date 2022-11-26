@@ -9,3 +9,11 @@ def pytest_addoption(parser):
         default=False,
         help="enable integration decorated tests",
     )
+    parser.addoption(
+        "--docker",
+        action="store_true",
+        dest="docker",
+        default=False,
+        help="enable docker decorated tests",
+    )
+    
