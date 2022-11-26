@@ -119,7 +119,7 @@ class ModelConstruct(Construct):
 
         # docker image with inference code and server for sagemaker predictions
         image = ecr_assets.DockerImageAsset(
-            self, "ModelImage", directory="../src/", file="endpoint/Dockerfile.endpoint"
+            self, "ModelImage", directory="../src/endpoint", file="Dockerfile.endpoint"
         )
         image_uri = image.image_uri
 
