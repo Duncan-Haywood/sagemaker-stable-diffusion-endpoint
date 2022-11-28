@@ -24,10 +24,11 @@ class ModelUploadStack(Stack):
             dockerfile_path, file=file
         )
         # Lambda function
+        # this may need to change because not large enough, but aws put a limit on it
         self.upload_model_lambda = lambda_.DockerImageFunction(
             self,
             "ModelUploadFn",
             code=model_code,
-            memory_size=10240,
+            memory_size=3008,
         )
         self.function_name = self.upload_model_lambda.function_name
