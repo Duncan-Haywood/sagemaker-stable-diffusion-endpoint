@@ -93,7 +93,7 @@ class EndpointConfigConstruct(Construct):
             initial_variant_weight=initial_variant_weight,
             model_name=model_name,
             variant_name=variant_name,
-            initial_instance_count=0,
+            initial_instance_count=1,
             instance_type=instance_type,
         )
 
