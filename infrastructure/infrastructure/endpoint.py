@@ -168,5 +168,10 @@ class ModelRoleConstruct(Construct):
             self,
             "ModelExecutionRole",
             assumed_by=iam.ServicePrincipal("sagemaker.amazonaws.com"),
-            managed_policies=[EndpointApplicationAllAccessManagedPolicy],
+            managed_policies=[
+                EndpointApplicationAllAccessManagedPolicy,
+                iam.ManagedPolicy.from_aws_managed_policy_name(
+                    "policy/AmazonEC2ContainerRegistryReadOnly"
+                ),
+            ],
         )

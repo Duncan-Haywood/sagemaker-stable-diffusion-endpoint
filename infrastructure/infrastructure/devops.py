@@ -55,6 +55,17 @@ class PipelineStack(Stack):
         self.pipeline.add_stage(
             EndpointStage(self, "ProdStage", production=True),
             pre=[pipelines.ManualApprovalStep("PromoteToProd")],
+            post=[
+                pipelines.CodeBuildStep(
+                    "IntegrationTest",
+                    commands=[
+                        "cd src/endpoint",
+                        "pip install poetry",
+                        "poetry install",
+                        "poetry run pytest --integration",
+                    ],
+                ),
+            ],
         )
 
 

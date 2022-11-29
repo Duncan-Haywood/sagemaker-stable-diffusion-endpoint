@@ -6,6 +6,7 @@ from moto import mock_sagemaker
 integration = pytest.mark.skipif("not config.getoption('integration')")
 pytestmark = integration
 
+
 def test_init():
     pred = predict.Predictor()
 

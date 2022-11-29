@@ -16,4 +16,3 @@ def pytest_addoption(parser):
         default=False,
         help="enable docker decorated tests",
     )
-    
