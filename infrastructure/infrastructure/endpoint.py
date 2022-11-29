@@ -6,6 +6,8 @@ from constructs import Construct
 from aws_cdk import aws_iam as iam
 from aws_cdk import RemovalPolicy
 
+INSTANCE_TYPE = 'ml.t2.medium'
+realinstancetype = "ml.p2.xlarge"
 
 class EndpointStack(Stack):
     def __init__(
@@ -73,7 +75,7 @@ class EndpointConfigConstruct(Construct):
         super().__init__(scope, construct_id, **kwargs)
 
         # type of instance on which the endpoint will run
-        instance_type = "ml.p2.xlarge"
+        instance_type = INSTANCE_TYPE
 
         # name of production variant
         variant_name = "TODO"
