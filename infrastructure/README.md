@@ -10,4 +10,5 @@
 
 - to deploy, first `poetry install; poetry run python ./endpoint/create_secret.py; poetry run python ./endpoint/upload_github_token.py` in src/endpoint. and use your huggingface model hub token from your account. Then for the github token with the follwoing details: """Authentication will be done by a secret called `github-token` in AWS Secrets Manager (unless specified otherwise).The token should have these permissions: repo to read the repository and admin:repo_hook if you plan to use webhooks (true by default)""".
 - then run deploy.sh from this file and see instructions in the comments in that file. push to github main branch before running this. create an user with the policy attached: AdministratorAccess and programatic access credentials when it asks. After the pipeline is up and running, delete that user, as it is a security vulnerability.
-- you need to increase service limit for ml.p2.xlarge to 1 or more for the service to work.
+- you need to increase service limit for ml.p2.xlarge to 1 or more for the service to work. and switch back INSTANCETYPE in endpoint.py to ml.p2.xlarge
+- still might need an autoscaler added on the endpoint.
