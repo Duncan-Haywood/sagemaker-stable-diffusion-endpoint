@@ -6,8 +6,9 @@ from constructs import Construct
 from aws_cdk import aws_iam as iam
 from aws_cdk import RemovalPolicy
 
-INSTANCE_TYPE = 'ml.t2.medium'
+INSTANCE_TYPE = "ml.t2.medium"
 realinstancetypetochangeto = "ml.p2.xlarge"
+
 
 class EndpointStack(Stack):
     def __init__(
@@ -175,8 +176,6 @@ class ModelRoleConstruct(Construct):
                 iam.ManagedPolicy.from_aws_managed_policy_name(
                     "AmazonEC2ContainerRegistryReadOnly"
                 ),
-                iam.ManagedPolicy.from_aws_managed_policy_name(
-                    "AmazonS3FullAccess"
-                ),
+                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonS3FullAccess"),
             ],
         )

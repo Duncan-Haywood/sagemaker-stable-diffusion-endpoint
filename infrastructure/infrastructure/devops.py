@@ -30,8 +30,8 @@ class PipelineStack(Stack):
             ),
         )
         self.pipeline.add_stage(
-            UnitTestStage(self, "UnitTestStage", production=False),
-            post=[
+            EndpointStage(self, "TestStage", production=False),
+            pre=[
                 pipelines.CodeBuildStep(
                     "UnitTest",
                     commands=[
@@ -40,9 +40,8 @@ class PipelineStack(Stack):
                         "poetry install",
                         "poetry run pytest",
                     ],
-                )])
-        self.pipeline.add_stage(
-            EndpointStage(self, "IntegrationTestStage", production=False),
+                )
+            ],
             post=[
                 pipelines.CodeBuildStep(
                     "IntegrationTest",
@@ -70,11 +69,6 @@ class PipelineStack(Stack):
                 ),
             ],
         )
-class UnitTestStage(Stage):
-    def __init__(
-        self, scope: Construct, construct_id: str, **kwargs
-    ) -> None:
-        super().__init__(scope, construct_id, **kwargs)
 
 
 class EndpointStage(Stage):
