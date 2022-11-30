@@ -16,20 +16,17 @@ def secret_string():
 
 
 def test_create_secret(secret_name, secret_string):
-    response = util.create_secret(secret_name, secret_string)
-    assert response is not None
-    assert response["Name"] is not None
+    with moto.mock_secretsmanager():
+        response = util.create_secret(secret_name, secret_string)
+        assert response is not None
+        assert response["Name"] is not None
 
 
-@pytest.fixture
-def create_secret(secret_name, secret_string):
-    response = util.create_secret(secret_name, secret_string)
-    return response
-
-
-def test_get_secret(secret_name, create_secret, secret_string):
-    response = util.get_secret(secret_name)
-    assert secret_string == response
+def test_get_secret(secret_name, secret_string):
+    with moto.mock_secretsmanager():
+        util.create_secret(secret_name, secret_string)
+        response = util.get_secret(secret_name)
+        assert secret_string == response
 
 
 def test_get_model_repository():
