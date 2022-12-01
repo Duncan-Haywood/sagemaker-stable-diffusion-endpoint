@@ -16,3 +16,10 @@ def pytest_addoption(parser):
         default=False,
         help="enable docker decorated tests",
     )
+    parser.addoption(
+        "--docker-build",
+        action="store_true",
+        dest="docker_build",
+        default=False,
+        help="enable docker_build decorated tests",
+    )
