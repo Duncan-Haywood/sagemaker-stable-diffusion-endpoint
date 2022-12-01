@@ -25,7 +25,7 @@ class PipelineStack(Stack):
             ),
         )
         self.pipeline.add_stage(
-            TestStage(self, "TestStage", production=False),
+            TestStage(self, "TestStage"),
             pre=[
                 unit_tests,
                 docker_unit_tests,
