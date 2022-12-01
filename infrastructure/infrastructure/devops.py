@@ -24,7 +24,8 @@ class PipelineStack(Stack):
                 ),
             ),
         )
-        self.pipeline.add_stage(
+        self.test_wave = self.pipeline.add_wave("TestWave")
+        self.test_wave.add_stage(
             TestStage(self, "TestStage"),
             pre=[
                 unit_tests,
@@ -33,7 +34,7 @@ class PipelineStack(Stack):
             ],
             post=[],
         )
-        self.pipeline.add_stage(
+        self.test_wave.add_stage(
             CompleteStage(self, "IntegrationTestStage", production=False),
             post=[
                 integration_tests,
@@ -44,7 +45,7 @@ class PipelineStack(Stack):
             CompleteStage(self, "ProdStage", production=True),
             pre=[pipelines.ManualApprovalStep("PromoteToProd")],
             post=[
-                integration_tests,
+                # integration_tests,
             ],
         )
 
@@ -66,8 +67,9 @@ class TestStage(Stage):
 class AppStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
-        # create model upload stack + export variables
+        # create model upload stack
         self.model_upload_stack = ModelUploadStack(self, "ModelUploadStack")
+        #export variables
         model_bucket_name = self.model_upload_stack.model_bucket_name
         self.lambda_function_name = self.model_upload_stack.lambda_function_name
 
