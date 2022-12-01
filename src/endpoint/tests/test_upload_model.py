@@ -3,10 +3,12 @@ import pytest
 from endpoint import util
 from moto import mock_s3
 from logging import Logger
+
 logger = Logger(__name__)
 
 docker_mark = pytest.mark.skipif("not config.getoption('upload_model')")
 pytestmark = docker_mark
+
 
 @pytest.fixture
 def model_id():
@@ -23,8 +25,6 @@ def test_load_model(model_id, hugging_face_token):
     assert model is not None
 
 
-
-
 @pytest.fixture
 def model(model_id, hugging_face_token):
     return upload_model.load_model(model_id, hugging_face_token)
@@ -33,6 +33,7 @@ def model(model_id, hugging_face_token):
 def test_save_model_local(model, tmp_path):
     local_dir = tmp_path
     upload_model.save_model_local(model, local_dir)
+
 
 @pytest.fixture
 def bucket_name_env(monkeypatch):
@@ -47,11 +48,8 @@ def test_model_exists():
 def test_main(bucket_name_env):
     with mock_s3():
         upload_model.main()
-    
+
 
 @pytest.mark.skip(reason="redundant")
 def test_lambda_handler():
     upload_model.lambda_handler(None, None)
-    
-
-
