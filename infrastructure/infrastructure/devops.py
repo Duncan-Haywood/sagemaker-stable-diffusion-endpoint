@@ -159,7 +159,7 @@ def upload_model_tests():
 
 def local_integration_tests():
     return pipelines.CodeBuildStep(
-        "IntegrationTest",
+        "LocalIntegrationTest",
         commands=[
             "cd src/endpoint",
             "pip install poetry",
