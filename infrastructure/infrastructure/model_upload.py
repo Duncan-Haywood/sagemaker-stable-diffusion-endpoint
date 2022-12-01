@@ -1,5 +1,5 @@
 from aws_cdk import aws_s3 as s3
-from aws_cdk import Stack, RemovalPolicy
+from aws_cdk import Stack, RemovalPolicy, CfnOutput
 from constructs import Construct
 from aws_cdk import aws_lambda as lambda_
 
@@ -32,3 +32,8 @@ class ModelUploadStack(Stack):
             memory_size=3008,
         )
         self.function_name = self.upload_model_lambda.function_name
+        self.lambda_function_name = CfnOutput(
+            self,
+            "Output",
+            value=self.function_name,
+        )
