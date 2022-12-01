@@ -86,8 +86,8 @@ def test_download_from_s3(bucket_name, local_dir, key, output_dir):
             assert str(file.read()) == "test"
 
 
-@pytest.mark.skip(reason="Not implemented")
-def test_get_model_bucket_name():
+def test_get_model_bucket_name(monkeypatch):
+    monkeypatch.setenv("model_bucket_name", "test")
     result = util.get_model_bucket_name()
     assert result is not None
 
