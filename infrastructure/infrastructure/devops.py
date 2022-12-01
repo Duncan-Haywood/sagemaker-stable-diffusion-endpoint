@@ -37,7 +37,7 @@ class PipelineStack(Stack):
         self.test_wave.add_stage(
             CompleteStage(self, "IntegrationTestStage", production=False),
             post=[
-                integration_tests,
+                integration_tests(),
             ],
         )
 
@@ -45,7 +45,7 @@ class PipelineStack(Stack):
             CompleteStage(self, "ProdStage", production=True),
             pre=[pipelines.ManualApprovalStep("PromoteToProd")],
             post=[
-                # integration_tests,
+                integration_tests(),
             ],
         )
 
@@ -146,7 +146,8 @@ upload_model_tests = pipelines.CodeBuildStep(
         "poetry run pytest tests/test_upload_model.py --upload-model -n $(nproc)",
     ],
 )
-integration_tests = pipelines.CodeBuildStep(
+def integration_tests():
+    return pipelines.CodeBuildStep(
     "IntegrationTest",
     commands=[
         "cd src/endpoint",
