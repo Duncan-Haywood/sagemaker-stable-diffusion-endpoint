@@ -54,6 +54,7 @@ class PipelineStack(Stack):
                         "poetry install",
                         "poetry run pytest tests/test_docker.py --docker",
                     ],
+                    build_environment=codebuild.BuildEnvironment(privileged=True),
                 ),
             ],
             post=[
