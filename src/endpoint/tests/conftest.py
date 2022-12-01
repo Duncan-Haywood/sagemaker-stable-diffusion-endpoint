@@ -30,3 +30,10 @@ def pytest_addoption(parser):
         default=False,
         help="enable upload_model decorated tests",
     )
+    parser.addoption(
+        "--local-integration",
+        action="store_true",
+        dest="local_integration",
+        default=False,
+        help="enable local_integration decorated tests",
+    )

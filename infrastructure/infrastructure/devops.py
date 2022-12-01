@@ -28,16 +28,17 @@ class PipelineStack(Stack):
         self.test_wave.add_stage(
             TestStage(self, "TestStage"),
             pre=[
-                unit_tests,
-                docker_unit_tests,
-                upload_model_tests,
+                unit_tests(),
+                docker_unit_tests(),
+                upload_model_tests(),
             ],
-            post=[],
+            post=[local_integration_tests()],
         )
         self.test_wave.add_stage(
             CompleteStage(self, "IntegrationTestStage", production=False),
             post=[
                 integration_tests(),
+                local_integration_tests()
             ],
         )
 
@@ -46,6 +47,7 @@ class PipelineStack(Stack):
             pre=[pipelines.ManualApprovalStep("PromoteToProd")],
             post=[
                 integration_tests(),
+                local_integration_tests()
             ],
         )
 
@@ -69,7 +71,7 @@ class AppStack(Stack):
         super().__init__(scope, construct_id, **kwargs)
         # create model upload stack
         self.model_upload_stack = ModelUploadStack(self, "ModelUploadStack")
-        #export variables
+        # export variables
         model_bucket_name = self.model_upload_stack.model_bucket_name
         self.lambda_function_name = self.model_upload_stack.lambda_function_name
 
@@ -118,44 +120,65 @@ def synth(source):
     )
 
 
-unit_tests = pipelines.CodeBuildStep(
-    "UnitTest",
-    commands=[
-        "cd src/endpoint",
-        "pip install poetry",
-        "poetry install",
-        "poetry run pytest -n $(nproc)",
-    ],
-)
-docker_unit_tests = pipelines.CodeBuildStep(
-    "DockerUnitTests",
-    commands=[
-        "cd src/endpoint",
-        "pip install poetry",
-        "poetry install",
-        "poetry run pytest tests/test_docker.py --docker-local -n $(nproc)",
-    ],
-    build_environment=codebuild.BuildEnvironment(privileged=True),
-)
-upload_model_tests = pipelines.CodeBuildStep(
-    "UploadModelTests",
-    commands=[
-        "cd src/endpoint",
-        "pip install poetry",
-        "poetry install",
-        "poetry run pytest tests/test_upload_model.py --upload-model -n $(nproc)",
-    ],
-)
+def unit_tests():
+    return pipelines.CodeBuildStep(
+        "UnitTest",
+        commands=[
+            "cd src/endpoint",
+            "pip install poetry",
+            "poetry install",
+            "poetry run pytest -n $(nproc)",
+        ],
+    )
+
+
+def docker_unit_tests():
+    return pipelines.CodeBuildStep(
+        "DockerUnitTests",
+        commands=[
+            "cd src/endpoint",
+            "pip install poetry",
+            "poetry install",
+            "poetry run pytest tests/test_docker_local.py --docker-local -n $(nproc)",
+        ],
+        build_environment=codebuild.BuildEnvironment(privileged=True),
+    )
+
+
+def upload_model_tests():
+    return pipelines.CodeBuildStep(
+        "UploadModelTests",
+        commands=[
+            "cd src/endpoint",
+            "pip install poetry",
+            "poetry install",
+            "poetry run pytest tests/test_upload_model.py --upload-model -n $(nproc)",
+        ],
+    )
+
+
+def local_integration_tests():
+    return pipelines.CodeBuildStep(
+        "IntegrationTest",
+        commands=[
+            "cd src/endpoint",
+            "pip install poetry",
+            "poetry install",
+            "poetry run pytest tests/test_local_integration.py --local-integration -n $(nproc)",
+        ],
+    )
+
+
 def integration_tests():
     return pipelines.CodeBuildStep(
-    "IntegrationTest",
-    commands=[
-        "cd src/endpoint",
-        "pip install poetry",
-        "poetry install",
-        "poetry run pytest tests/test_integration.py --integration -n $(nproc)",
-    ],
-)
+        "IntegrationTest",
+        commands=[
+            "cd src/endpoint",
+            "pip install poetry",
+            "poetry install",
+            "poetry run pytest tests/test_integration.py --integration -n $(nproc)",
+        ],
+    )
 
 
 def upload_model_trigger_step(lambda_function_name):
