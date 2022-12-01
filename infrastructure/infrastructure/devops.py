@@ -2,7 +2,7 @@ from constructs import Construct
 from aws_cdk import Stack, pipelines, Stage, CfnOutput
 from infrastructure.endpoint import EndpointStack
 from infrastructure.model_upload import ModelUploadStack
-
+from aws_cdk import aws_codebuild as codebuild
 
 OWNER_REPO = "Duncan-Haywood/diffusion-endpoint"
 BRANCH = "main"
@@ -27,6 +27,11 @@ class PipelineStack(Stack):
                     "npm install -g aws-cdk",
                     "poetry run cdk synth --output ../cdk.out",
                 ],
+            ),
+            code_build_defaults=pipelines.CodeBuildOptions(
+                build_environment=codebuild.BuildEnvironment(
+                    compute_type=codebuild.ComputeType.LARGE,
+                ),
             ),
         )
         self.pipeline.add_stage(
