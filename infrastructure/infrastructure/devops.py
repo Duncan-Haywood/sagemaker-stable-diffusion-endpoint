@@ -30,7 +30,7 @@ class PipelineStack(Stack):
             ),
             code_build_defaults=pipelines.CodeBuildOptions(
                 build_environment=codebuild.BuildEnvironment(
-                    compute_type=codebuild.ComputeType.LARGE,
+                    compute_type=codebuild.ComputeType.MEDIUM,
                 ),
             ),
         )
