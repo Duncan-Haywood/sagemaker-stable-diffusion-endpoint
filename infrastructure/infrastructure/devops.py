@@ -122,7 +122,7 @@ unit_tests = pipelines.CodeBuildStep(
         "cd src/endpoint",
         "pip install poetry",
         "poetry install",
-        "poetry run pytest",
+        "poetry run pytest -n $(nproc)",
     ],
 )
 docker_unit_tests = pipelines.CodeBuildStep(
@@ -131,7 +131,7 @@ docker_unit_tests = pipelines.CodeBuildStep(
         "cd src/endpoint",
         "pip install poetry",
         "poetry install",
-        "poetry run pytest tests/test_docker.py --docker-local",
+        "poetry run pytest tests/test_docker.py --docker-local -n $(nproc)",
     ],
     build_environment=codebuild.BuildEnvironment(privileged=True),
 )
@@ -150,7 +150,7 @@ integration_tests = pipelines.CodeBuildStep(
         "cd src/endpoint",
         "pip install poetry",
         "poetry install",
-        "poetry run pytest tests/test_integration.py --integration",
+        "poetry run pytest tests/test_integration.py --integration -n $(nproc)",
     ],
 )
 
