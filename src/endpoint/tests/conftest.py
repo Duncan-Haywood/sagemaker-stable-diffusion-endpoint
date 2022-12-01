@@ -23,3 +23,10 @@ def pytest_addoption(parser):
         default=False,
         help="enable docker_build decorated tests",
     )
+    parser.addoption(
+        "--upload-model",
+        action="store_true",
+        dest="upload_model",
+        default=False,
+        help="enable upload_model decorated tests",
+    )

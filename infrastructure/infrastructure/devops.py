@@ -56,6 +56,16 @@ class PipelineStack(Stack):
                     ],
                     build_environment=codebuild.BuildEnvironment(privileged=True),
                 ),
+                pipelines.CodeBuildStep(
+                    "UploadModelTests",
+                    commands=[
+                        "cd src/endpoint",
+                        "pip install poetry",
+                        "poetry install",
+                        "poetry run pytest tests/test_upload_model.py --upload-model -n $(nproc)",
+                    ],
+                    build_environment=codebuild.BuildEnvironment(privileged=True),
+                ),
             ],
             post=[
                 pipelines.CodeBuildStep(
