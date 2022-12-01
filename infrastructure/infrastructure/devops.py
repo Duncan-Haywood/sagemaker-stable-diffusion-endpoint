@@ -40,7 +40,16 @@ class PipelineStack(Stack):
                         "poetry install",
                         "poetry run pytest",
                     ],
-                )
+                ),
+                pipelines.CodeBuildStep(
+                    "DockerUnitTests",
+                    commands=[
+                        "cd src/endpoint",
+                        "pip install poetry",
+                        "poetry install",
+                        "poetry run pytest tests/test_docker.py --docker",
+                    ],
+                ),
             ],
             post=[
                 pipelines.CodeBuildStep(
