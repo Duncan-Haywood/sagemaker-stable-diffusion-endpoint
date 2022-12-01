@@ -79,7 +79,7 @@ class EndpointConfigConstruct(Construct):
         instance_type = INSTANCE_TYPE
 
         # name of production variant
-        variant_name = "TODO"
+        variant_name = "V1"
 
         # which proportion of instances to use with this model on scale [0,1.0] -- required paramenter that's not relevant to us
         initial_variant_weight = 1.0
