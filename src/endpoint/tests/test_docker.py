@@ -23,3 +23,8 @@ def test_model_upload_docker():
     )
     logger.info(completed_process.stdout)
     completed_process.check_returncode()
+
+
+@pytest.mark.skip(reason="Not implemented")
+def test_ping():
+    raise NotImplementedError
