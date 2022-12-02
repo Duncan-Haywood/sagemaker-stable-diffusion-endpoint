@@ -14,26 +14,44 @@ class PipelineStack(Stack):
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
         source = pipelines.CodePipelineSource.git_hub(OWNER_REPO, branch)
-        self.pipeline = pipelines.CodePipeline(
-            self,
-            "Pipeline",
-            synth=pipelines.CodeBuildStep(
-                "Synth",
-                input=source,
-                commands=[
-                    "cd infrastructure",
-                    "pip install poetry",
-                    "poetry install",
-                    "npm install -g aws-cdk",
-                    "poetry run cdk synth --output ../cdk.out",
-                ],
-            ),
-            code_build_defaults=pipelines.CodeBuildOptions(
-                build_environment=codebuild.BuildEnvironment(
-                    compute_type=codebuild.ComputeType.MEDIUM,
+        self.pipeline = (
+            pipelines.CodePipeline(
+                self,
+                "Pipeline",
+                synth=pipelines.CodeBuildStep(
+                    "Synth",
+                    input=source,
+                    commands=[
+                        "cd infrastructure",
+                        "pip install poetry",
+                        "poetry install",
+                        "npm install -g aws-cdk",
+                        "poetry run cdk synth --output ../cdk.out",
+                    ],
+                ),
+                code_build_defaults=pipelines.CodeBuildOptions(
+                    build_environment=codebuild.BuildEnvironment(
+                        compute_type=codebuild.ComputeType.LARGE,
+                    )
+                ),
+                synth_code_build_defaults=pipelines.CodeBuildOptions(
+                    build_environment=codebuild.BuildEnvironment(
+                        compute_type=codebuild.ComputeType.LARGE,
+                    )
+                ),
+                asset_publishing_code_build_defaults=pipelines.CodeBuildOptions(
+                    build_environment=codebuild.BuildEnvironment(
+                        compute_type=codebuild.ComputeType.LARGE,
+                    )
+                ),
+                self_mutation_code_build_defaults=pipelines.CodeBuildOptions(
+                    build_environment=codebuild.BuildEnvironment(
+                        compute_type=codebuild.ComputeType.LARGE,
+                    )
                 ),
             ),
         )
+
         asset_stage = AssetStage(self, "AssetStage")
         general_image_uri = asset_stage.general_image_uri
         sagemaker_image_uri = asset_stage.sagemaker_image_uri
