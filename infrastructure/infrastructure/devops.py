@@ -94,7 +94,9 @@ class EndpointStage(Stage):
             stack=self.app,
             post=[
                 upload_model_step(general_image_uri, self.app.model_bucket_name),
-                set_endpoint_in_parameter_store(general_image_uri, production, self.app.endpoint_name),
+                set_endpoint_in_parameter_store(
+                    general_image_uri, production, self.app.endpoint_name
+                ),
             ],
         )
 

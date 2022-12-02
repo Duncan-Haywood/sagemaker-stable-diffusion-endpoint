@@ -84,6 +84,6 @@ class EndpointStack(Stack):
         self.endpoint = sagemaker.CfnEndpoint(
             self,
             "DiffusionEndpoint",
-            endpoint_config_name=endpoint_config.endpoint_config_name,
+            endpoint_config_name=endpoint_config.attr_endpoint_config_name,
         )
         self.endpoint_name = self.endpoint.attr_endpoint_name
