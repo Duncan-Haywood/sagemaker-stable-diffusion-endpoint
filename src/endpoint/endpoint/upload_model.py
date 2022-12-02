@@ -63,9 +63,5 @@ def main():
         logger.info("model uploaded to s3")
 
 
-def lambda_handler(event, context):
-    main()
-
-
 if __name__ == "__main__":
     main()

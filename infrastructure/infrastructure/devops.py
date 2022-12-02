@@ -1,7 +1,7 @@
 from constructs import Construct
 from aws_cdk import Stack, pipelines, Stage, CfnOutput
 from infrastructure.endpoint import EndpointStack
-from infrastructure.model_upload import ModelUploadStack
+from infrastructure.model_bucket import ModelBucketStack
 from aws_cdk import aws_codebuild as codebuild
 
 OWNER_REPO = "Duncan-Haywood/diffusion-endpoint"
@@ -36,19 +36,13 @@ class PipelineStack(Stack):
         )
         self.test_wave.add_stage(
             CompleteStage(self, "IntegrationTestStage", production=False),
-            post=[
-                integration_tests(),
-                local_integration_tests()
-            ],
+            post=[integration_tests(), local_integration_tests()],
         )
 
         self.pipeline.add_stage(
             CompleteStage(self, "ProdStage", production=True),
             pre=[pipelines.ManualApprovalStep("PromoteToProd")],
-            post=[
-                integration_tests(),
-                local_integration_tests()
-            ],
+            post=[integration_tests(), local_integration_tests()],
         )
 
 
@@ -56,28 +50,24 @@ class TestStage(Stage):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
         # create model upload stack
-        self.model_upload_stack = ModelUploadStack(self, "ModelUploadStack")
-        # export variable
-        self.lambda_function_name = self.model_upload_stack.lambda_function_name
-        # steps for post
+        self.model_bucket = ModelBucketStack(self, "ModelBucketStack")
         pipelines.StackSteps(
-            stack=self.model_upload_stack,
-            post=[upload_model_trigger_step(self.lambda_function_name)],
+            stack=self.model_bucket,
+            post=[upload_model_step(self.model_bucket.model_bucket_name)],
         )
 
 
-class AppStack(Stack):
+class CompleteStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
         # create model upload stack
-        self.model_upload_stack = ModelUploadStack(self, "ModelUploadStack")
+        self.model_upload_stack = ModelBucketStack(self, "ModelBucketStack")
         # export variables
-        model_bucket_name = self.model_upload_stack.model_bucket_name
-        self.lambda_function_name = self.model_upload_stack.lambda_function_name
+        self.model_bucket_name = self.model_upload_stack.model_bucket_name
 
         # create endpoint stack
         self.endpoint_stack = EndpointStack(
-            self, "EndpointStack", model_bucket_name=model_bucket_name
+            self, "EndpointStack", model_bucket_name=self.model_bucket_name
         )
         # might need because of dependency on bucket being created already?
         # self.endpoint_stack.add_dependency(self.model_upload_stack)
@@ -94,12 +84,12 @@ class CompleteStage(Stage):
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
         # create stacks
-        self.app = AppStack(self, "CompleteApp")
+        self.app = CompleteStack(self, "CompleteStack")
         # add post processing steps
         pipelines.StackSteps(
             stack=self.app,
             post=[
-                upload_model_trigger_step(self.app.lambda_function_name),
+                upload_model_step(self.app.model_bucket_name),
                 set_endpoint_in_parameter_store(production, self.app.endpoint_name),
             ],
         )
@@ -181,20 +171,6 @@ def integration_tests():
     )
 
 
-def upload_model_trigger_step(lambda_function_name):
-    step = pipelines.CodeBuildStep(
-        "TriggerModelUploadLambda",
-        commands=[
-            "cd infrastructure",
-            "pip install poetry",
-            "poetry install",
-            "poetry run python ./infrastructure/trigger_model_upload.py",
-        ],
-        env_from_cfn_outputs={"function_name": lambda_function_name},
-    )
-    return step
-
-
 def set_endpoint_in_parameter_store(production, endpoint_name):
     step = pipelines.CodeBuildStep(
         "SetEndpointNameInParameterStore",
@@ -212,3 +188,14 @@ def set_endpoint_in_parameter_store(production, endpoint_name):
         },
     )
     return step
+
+
+def upload_model_step(model_bucket_name):
+    return pipelines.CodeBuildStep(
+        "UploadModel",
+        commands=[
+            "cd src/endpoint",
+            "docker build --tag model_upload .",
+            f"docker run --name model_upload -e 'model_bucket_name={model_bucket_name}' './endpoint/upload_model.py'",
+        ],
+    )
