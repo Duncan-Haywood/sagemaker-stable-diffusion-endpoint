@@ -6,6 +6,7 @@ from aws_cdk import aws_iam as iam
 from aws_cdk import RemovalPolicy
 from aws_cdk.aws_sagemaker import CfnModel
 
+# TODO change once bug fixing is done
 INSTANCE_TYPE = "ml.t2.medium"
 realinstancetypetochangeto = "ml.p2.xlarge"
 
