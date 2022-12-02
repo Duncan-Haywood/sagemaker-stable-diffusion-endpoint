@@ -1,8 +1,10 @@
 from constructs import Construct
-from aws_cdk import Stack, pipelines, Stage, CfnOutput
-from infrastructure.endpoint import EndpointStack
+from aws_cdk import Stack, pipelines, Stage
 from infrastructure.model_bucket import ModelBucketStack
 from aws_cdk import aws_codebuild as codebuild
+from infrastructure.complete import CompleteStack
+from aws_cdk import aws_ecr as ecr
+
 
 OWNER_REPO = "Duncan-Haywood/diffusion-endpoint"
 BRANCH = "main"
@@ -46,6 +48,12 @@ class PipelineStack(Stack):
         )
 
 
+# class AssetsStage(Stage):
+#     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
+#         super().__init__(scope, construct_id, **kwargs)
+#         self.source_image_repo = ecr.Repository(self, "SourceImageRepository")
+
+
 class TestStage(Stage):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -54,27 +62,6 @@ class TestStage(Stage):
         pipelines.StackSteps(
             stack=self.model_bucket,
             post=[upload_model_step(self.model_bucket.model_bucket_name)],
-        )
-
-
-class CompleteStack(Stack):
-    def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
-        super().__init__(scope, construct_id, **kwargs)
-        # create model upload stack
-        self.model_upload_stack = ModelBucketStack(self, "ModelBucketStack")
-        # export variables
-        self.model_bucket_name = self.model_upload_stack.model_bucket_name
-
-        # create endpoint stack
-        self.endpoint_stack = EndpointStack(
-            self, "EndpointStack", model_bucket_name=self.model_bucket_name
-        )
-        # might need because of dependency on bucket being created already?
-        # self.endpoint_stack.add_dependency(self.model_upload_stack)
-
-        # export variables
-        self.endpoint_name = CfnOutput(
-            self.endpoint_stack, "Output", value=self.endpoint_stack.endpoint_name
         )
 
 
@@ -108,6 +95,18 @@ def synth(source):
             "poetry run cdk synth --output ../cdk.out",
         ],
     )
+
+
+# def all_unit_tests():
+#     return pipelines.CodeBuildStep(
+#         "UnitTest",
+#         commands=[
+#             "cd src/endpoint",
+#             "pip install poetry",
+#             "poetry install",
+#             "poetry run pytest --docker-local --upload-model -n $(nproc)",
+#         ],
+#     )
 
 
 def unit_tests():
@@ -195,7 +194,27 @@ def upload_model_step(model_bucket_name):
         "UploadModel",
         commands=[
             "cd src/endpoint",
-            "docker build --tag model_upload .",
-            f"docker run --name model_upload -e 'model_bucket_name={model_bucket_name}' './endpoint/upload_model.py'",
+            "docker build --tag endpoint .",
+            f"docker run --name endpoint -e 'model_bucket_name={model_bucket_name}' './endpoint/upload_model.py'",
         ],
     )
+
+
+# def image(IMAGE_REPO_NAME, IMAGE_TAG, AWS_ACCOUNT_ID, AWS_DEFAULT_REGION):
+#     return pipelines.CodeBuildStep(
+#         "Image",
+#         commands=[
+#             "cd src/endpoint",
+#             "docker build --tag endpoint .",
+#             "docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG",
+#             "docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG",
+#         ],
+#         build_environment=codebuild.BuildEnvironment(privileged=True),
+#         env=dict(
+#             IMAGE_REPO_NAME=IMAGE_REPO_NAME,
+#             IMAGE_TAG=IMAGE_TAG,
+#             AWS_ACCOUNT_ID=AWS_ACCOUNT_ID,
+#             AWS_DEFAULT_REGION=AWS_DEFAULT_REGION,
+#         ),
+#         env_from_cfn_outputs=dict(),
+#     )
