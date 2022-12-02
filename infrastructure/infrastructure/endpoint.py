@@ -88,6 +88,6 @@ class EndpointStack(Stack):
             endpoint_config_name=endpoint_config.attr_endpoint_config_name,
         )
         self.endpoint_name = CfnOutput(
-            self, "EndpointName", value=self.endpoint.endpoint_name
+            self, "EndpointName", value=self.endpoint.attr_endpoint_name
         )
         self.model_bucket_name = model_bucket.bucket_name
