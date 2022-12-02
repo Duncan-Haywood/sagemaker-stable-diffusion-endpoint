@@ -72,7 +72,7 @@ class EndpointStack(Stack):
             production_variants=[
                 sagemaker.CfnEndpointConfig.ProductionVariantProperty(
                     initial_variant_weight=1.0,
-                    model_name=model.model_name,
+                    model_name=model.attr_model_name,
                     variant_name="V1",
                     initial_instance_count=1,
                     instance_type=INSTANCE_TYPE,
