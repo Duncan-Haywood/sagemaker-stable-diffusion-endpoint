@@ -18,7 +18,16 @@ PING_URL = BASE_URL + "ping"
 @pytest.fixture(scope="module")
 def docker_container():
     completed_process = subprocess.run(
-        ["docker", "build", "--file", "Dockerfile.endpoint", "--tag", "server-test", "."], capture_output=True
+        [
+            "docker",
+            "build",
+            "--file",
+            "Dockerfile.endpoint",
+            "--tag",
+            "server-test",
+            ".",
+        ],
+        capture_output=True,
     )
     logger.info(completed_process.stdout)
     completed_process.check_returncode()
