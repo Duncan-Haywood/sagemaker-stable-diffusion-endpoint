@@ -1,5 +1,5 @@
 from constructs import Construct
-from aws_cdk import Stack, pipelines, Stage
+from aws_cdk import Stack, pipelines, Stage, CfnOutput
 from infrastructure.endpoint import EndpointStack
 from aws_cdk import aws_codebuild as codebuild
 from aws_cdk import aws_ecr as ecr
@@ -198,7 +198,7 @@ class AssetStack(Stack):
         super().__init__(scope, construct_id, **kwargs)
         self.repo = ecr.Repository(self, "Repository")
         image_repo_name = self.repo.repository_name
-        self.repository_uri = self.repo.repository_uri
+        self.repository_uri = CfnOutput(self, "RepoUri", self.repo.repository_uri)
         pipelines.StackSteps(
             stack=self,
             post=[
