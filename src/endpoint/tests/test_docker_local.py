@@ -15,7 +15,7 @@ BASE_URL = "http://0.0.0.0:8080/"
 PING_URL = BASE_URL + "ping"
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def docker_container():
     completed_process = subprocess.run(
         ["docker", "build", "--file", "Dockerfile.endpoint", "--tag", "server-test", "."], capture_output=True
