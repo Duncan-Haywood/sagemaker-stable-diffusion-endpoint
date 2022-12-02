@@ -94,7 +94,7 @@ class EndpointStage(Stage):
             stack=self.app,
             post=[
                 upload_model_step(general_image_uri, self.app.model_bucket_name),
-                set_endpoint_in_parameter_store(production, self.app.endpoint_name),
+                set_endpoint_in_parameter_store(general_image_uri, production, self.app.endpoint_name),
             ],
         )
 
@@ -130,15 +130,16 @@ def integration_tests(image_uri):
     )
 
 
-def set_endpoint_in_parameter_store(production, endpoint_name):
-    step = pipelines.CodeBuildStep(
+def set_endpoint_in_parameter_store(image_uri, production, endpoint_name):
+    return pipelines.CodeBuildStep(
         "SetEndpointNameInParameterStore",
         commands=[
-            "cd infrastructure",
-            "pip install poetry",
-            "poetry install",
-            "poetry run python ./infrastructure/param_store_endpoint_name.py",
+            "python ./endpoint/param_store_endpoint_name.py",
         ],
+        build_environment=codebuild.BuildEnvironment(
+            compute_type=codebuild.ComputeType.MEDIUM,
+            build_image=image_uri,
+        ),
         env={
             "production": str(production),
         },
@@ -146,7 +147,6 @@ def set_endpoint_in_parameter_store(production, endpoint_name):
             "endpoint_name": endpoint_name,
         },
     )
-    return step
 
 
 def upload_model_step(image_uri, model_bucket_name):
