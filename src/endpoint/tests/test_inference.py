@@ -6,6 +6,7 @@ from diffusers import StableDiffusionInpaintPipeline
 
 pytestmark = pytest.mark.skip("Not implemented")
 
+
 @pytest.fixture
 def image_size():
     return (512, 512)
