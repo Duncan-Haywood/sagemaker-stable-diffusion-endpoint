@@ -1,4 +1,4 @@
-from aws_cdk import Stack, Tags
+from aws_cdk import Stack, CfnOutput
 from aws_cdk import aws_s3 as s3
 from aws_cdk import aws_sagemaker as sagemaker
 from constructs import Construct
@@ -87,5 +87,7 @@ class EndpointStack(Stack):
             "DiffusionEndpoint",
             endpoint_config_name=endpoint_config.attr_endpoint_config_name,
         )
-        self.endpoint_name = self.endpoint.endpoint_name
+        self.endpoint_name = CfnOutput(
+            self, "EndpointName", value=self.endpoint.endpoint_name
+        )
         self.model_bucket_name = model_bucket.bucket_name
