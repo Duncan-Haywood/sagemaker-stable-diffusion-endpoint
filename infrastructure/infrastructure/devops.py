@@ -72,7 +72,7 @@ class AssetStage(Stage):
         self.sagemaker_ecr = AssetStack(
             self, "SagemakerEndpointECR", file_name="Dockerfile.endpoint"
         )
-        self.sagemaker_image_uri = self.general_ecr.repository_uri
+        self.sagemaker_image_uri = self.general_ecr.repository_uri_str
         self.general_image_uri = self.sagemaker_ecr.repository_uri
 
 
@@ -198,9 +198,13 @@ class AssetStack(Stack):
         super().__init__(scope, construct_id, **kwargs)
         self.repo = ecr.Repository(self, "Repository")
         image_repo_name = self.repo.repository_name
-        repo_uri_str = self.repo.repository_uri
+        self.repository_uri_str = self.repo.repository_uri
         pipelines.StackSteps(
             stack=self,
-            post=[upload_image(image_repo_name, repo_uri_str, file_name, file_path)],
+            post=[
+                upload_image(
+                    image_repo_name, self.repository_uri_str, file_name, file_path
+                )
+            ],
         )
         self.repository_uri = CfnOutput(self, "RepoUri", value=self.repo.repository_uri)
