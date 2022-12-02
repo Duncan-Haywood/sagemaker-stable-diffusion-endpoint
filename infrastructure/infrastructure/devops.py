@@ -198,10 +198,9 @@ class AssetStack(Stack):
         super().__init__(scope, construct_id, **kwargs)
         self.repo = ecr.Repository(self, "Repository")
         image_repo_name = self.repo.repository_name
-        self.repository_uri = CfnOutput(self, "RepoUri", value=self.repo.repository_uri)
+        repo_uri_str = self.repo.repository_uri
         pipelines.StackSteps(
             stack=self,
-            post=[
-                upload_image(image_repo_name, self.repository_uri, file_name, file_path)
-            ],
+            post=[upload_image(image_repo_name, repo_uri_str, file_name, file_path)],
         )
+        self.repository_uri = CfnOutput(self, "RepoUri", value=self.repo.repository_uri)
