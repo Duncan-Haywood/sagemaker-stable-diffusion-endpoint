@@ -34,7 +34,7 @@ class PipelineStack(Stack):
                 ),
             ),
         )
-        asset_stage = AssetStage("AssetStage")
+        asset_stage = AssetStage(self, "AssetStage")
         general_image_uri = asset_stage.general_image_uri
         sagemaker_image_uri = asset_stage.sagemaker_image_uri
 
