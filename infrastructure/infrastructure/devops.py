@@ -4,7 +4,7 @@ from infrastructure.model_bucket import ModelBucketStack
 from aws_cdk import aws_codebuild as codebuild
 from infrastructure.complete import CompleteStack
 from aws_cdk import aws_ecr as ecr
-
+import os
 
 OWNER_REPO = "Duncan-Haywood/diffusion-endpoint"
 BRANCH = "main"
@@ -26,6 +26,7 @@ class PipelineStack(Stack):
                 ),
             ),
         )
+        self.pipeline.add_stage(AssetStage("AssetStage"))
         self.test_wave = self.pipeline.add_wave("TestWave")
         self.test_wave.add_stage(
             TestStage(self, "TestStage"),
@@ -48,10 +49,25 @@ class PipelineStack(Stack):
         )
 
 
-# class AssetsStage(Stage):
-#     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
-#         super().__init__(scope, construct_id, **kwargs)
-#         self.source_image_repo = ecr.Repository(self, "SourceImageRepository")
+class AssetStack(Stack):
+    def __init__(
+        self,
+        scope: Construct,
+        construct_id: str,
+        file_name="Dockerfile",
+        file_path="src/endpoint",
+        **kwargs,
+    ) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+        self.general_endpoint_repo = ecr.Repository(self, "Repository")
+        image_repo_name = self.general_endpoint_repo.repository_name
+        self.repository_uri = self.general_endpoint_repo.repository_uri
+        pipelines.StackSteps(stack = self, post=[upload_image(image_repo_name, self.repository_uri, file_name, file_path)])
+
+class AssetStage(Stage):
+    def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+        self.general_docker_assets = AssetStack(self, "GeneralDockerECR")
 
 
 class TestStage(Stage):
@@ -200,21 +216,22 @@ def upload_model_step(model_bucket_name):
     )
 
 
-# def image(IMAGE_REPO_NAME, IMAGE_TAG, AWS_ACCOUNT_ID, AWS_DEFAULT_REGION):
-#     return pipelines.CodeBuildStep(
-#         "Image",
-#         commands=[
-#             "cd src/endpoint",
-#             "docker build --tag endpoint .",
-#             "docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG",
-#             "docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG",
-#         ],
-#         build_environment=codebuild.BuildEnvironment(privileged=True),
-#         env=dict(
-#             IMAGE_REPO_NAME=IMAGE_REPO_NAME,
-#             IMAGE_TAG=IMAGE_TAG,
-#             AWS_ACCOUNT_ID=AWS_ACCOUNT_ID,
-#             AWS_DEFAULT_REGION=AWS_DEFAULT_REGION,
-#         ),
-#         env_from_cfn_outputs=dict(),
-#     )
+def upload_image(image_repo_name, repository_uri, file_name, file_path):
+    return pipelines.CodeBuildStep(
+        "Image",
+        commands=[
+            "docker build --tag $IMAGE_REPO_NAME --file $FILENAME $FILE_PATH",
+            "docker tag $IMAGE_REPO_NAME $REPOSITORY_URI",
+            "docker push $REPOSITORY_URI",
+        ],
+        build_environment=codebuild.BuildEnvironment(
+            privileged=True, compute_type=codebuild.ComputeType.LARGE
+        ),
+        env=dict(
+            IMAGE_REPO_NAME=image_repo_name,
+            REPOSITORY_URI=repository_uri,
+            FILENAME=file_name,
+            FILE_PATH=file_path,
+        ),
+        cache=codebuild.Cache.local(codebuild.LocalCacheMode.DOCKER_LAYER)
+    )
