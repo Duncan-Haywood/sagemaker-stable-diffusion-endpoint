@@ -36,8 +36,8 @@ class PipelineStack(Stack):
                     build_image=codebuild.LinuxBuildImage.from_asset(
                         self, "GeneralBuildImage", directory="../src/endpoint"
                     ),
-                    cache=codebuild.Cache.local(codebuild.LocalCacheMode.DOCKER_LAYER),
-                )
+                ),
+                cache=codebuild.Cache.local(codebuild.LocalCacheMode.DOCKER_LAYER),
             ),
             synth_code_build_defaults=pipelines.CodeBuildOptions(
                 build_environment=codebuild.BuildEnvironment(
