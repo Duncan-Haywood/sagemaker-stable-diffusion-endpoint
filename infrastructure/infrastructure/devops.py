@@ -21,22 +21,28 @@ class PipelineStack(Stack):
             synth=pipelines.CodeBuildStep(
                 "Synth",
                 input=source,
-                commands=[
-                    "cd infrastructure",
+                install_commands=[
                     "pip install poetry",
                     "poetry install",
                     "npm install -g aws-cdk",
+                ],
+                commands=[
                     "poetry run cdk synth --output ../cdk.out",
                 ],
             ),
             code_build_defaults=pipelines.CodeBuildOptions(
                 build_environment=codebuild.BuildEnvironment(
                     compute_type=codebuild.ComputeType.MEDIUM,
+                    build_image=codebuild.LinuxBuildImage.from_asset(
+                        self, "GeneralBuildImage", directory="../src/endpoint"
+                    ),
+                    cache=codebuild.Cache.local(codebuild.LocalCacheMode.DOCKER_LAYER),
                 )
             ),
             synth_code_build_defaults=pipelines.CodeBuildOptions(
                 build_environment=codebuild.BuildEnvironment(
                     compute_type=codebuild.ComputeType.MEDIUM,
+                    # cache=codebuild.Cache.local(codebuild.),
                 )
             ),
             asset_publishing_code_build_defaults=pipelines.CodeBuildOptions(
@@ -77,30 +83,22 @@ class EndpointStage(Stage):
         **kwargs,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
-        # create general image for tests
-        general_image = GeneralImageStack(self, "GeneralImageStack")
-        self.general_image_uri = general_image.general_image_uri
-        # run unit tests
-        pipelines.StackSteps(
-            stack=general_image, post=[unit_tests(self.general_image_uri)]
-        )
+
         # create endpoint stack
         self.app = EndpointStack(self, "EndpointStack")
-        self.general_image_uri = self.app.general_image_uri
 
         # add post processing steps with dependency graph
-        upload_model_step = upload_model_step(
-            self.general_image_uri, self.app.model_bucket_name
-        )
+        upload_model_step = upload_model_step(self.app.model_bucket_name)
         upload_endpoint_step = set_endpoint_in_parameter_store(
-            self.general_image_uri, production, self.app.endpoint_name
+            production, self.app.endpoint_name
         )
-        integration_test_step = integration_tests(self.general_image_uri)
+        integration_test_step = integration_tests()
         integration_test_step.add_step_dependency(upload_endpoint_step)
         integration_test_step.add_step_dependency(upload_model_step)
 
         pipelines.StackSteps(
             stack=self.app,
+            pre=[unit_tests()],
             post=[upload_model_step, upload_endpoint_step, integration_test_step],
         )
 
@@ -108,25 +106,7 @@ class EndpointStage(Stage):
 ## functions referenced above
 
 
-class GeneralImageStack(Stack):
-    def __init__(
-        self,
-        scope: Construct,
-        construct_id: str,
-        **kwargs,
-    ) -> None:
-        super().__init__(scope, construct_id, **kwargs)
-        # create general image assets
-        general_image = DockerImageAsset(
-            self,
-            "GeneralImage",
-            directory="../src/endpoint",
-            file="Dockerfile",
-        )
-        self.general_image_uri = general_image.image_uri
-
-
-def unit_tests(image_uri):
+def unit_tests():
     return pipelines.CodeBuildStep(
         "UnitTest",
         commands=[
@@ -135,12 +115,11 @@ def unit_tests(image_uri):
         build_environment=codebuild.BuildEnvironment(
             privileged=True,
             compute_type=codebuild.ComputeType.LARGE,
-            build_image=image_uri,
         ),
     )
 
 
-def integration_tests(image_uri):
+def integration_tests():
     return pipelines.CodeBuildStep(
         "UnitTest",
         commands=[
@@ -149,12 +128,11 @@ def integration_tests(image_uri):
         build_environment=codebuild.BuildEnvironment(
             privileged=True,
             compute_type=codebuild.ComputeType.LARGE,
-            build_image=image_uri,
         ),
     )
 
 
-def set_endpoint_in_parameter_store(image_uri, production, endpoint_name):
+def set_endpoint_in_parameter_store(production, endpoint_name):
     return pipelines.CodeBuildStep(
         "SetEndpointNameInParameterStore",
         commands=[
@@ -162,7 +140,6 @@ def set_endpoint_in_parameter_store(image_uri, production, endpoint_name):
         ],
         build_environment=codebuild.BuildEnvironment(
             compute_type=codebuild.ComputeType.MEDIUM,
-            build_image=image_uri,
         ),
         env={
             "production": str(production),
@@ -173,7 +150,7 @@ def set_endpoint_in_parameter_store(image_uri, production, endpoint_name):
     )
 
 
-def upload_model_step(image_uri, model_bucket_name):
+def upload_model_step(model_bucket_name):
     return pipelines.CodeBuildStep(
         "UploadModel",
         commands=[
@@ -181,7 +158,6 @@ def upload_model_step(image_uri, model_bucket_name):
         ],
         build_environment=codebuild.BuildEnvironment(
             compute_type=codebuild.ComputeType.LARGE,
-            build_image=image_uri,
         ),
         env=dict(model_bucket_name=model_bucket_name),
     )
@@ -206,27 +182,3 @@ def upload_model_step(image_uri, model_bucket_name):
 #         ),
 #         cache=codebuild.Cache.local(codebuild.LocalCacheMode.DOCKER_LAYER),
 #     )
-
-
-# class AssetStack(Stack):
-#     def __init__(
-#         self,
-#         scope: Construct,
-#         construct_id: str,
-#         file_name="Dockerfile",
-#         file_path="src/endpoint",
-#         **kwargs,
-#     ) -> None:
-#         super().__init__(scope, construct_id, **kwargs)
-#         self.repo = ecr.Repository(self, "Repository")
-#         image_repo_name = self.repo.repository_name
-#         self.repository_uri_str = self.repo.repository_uri
-#         pipelines.StackSteps(
-#             stack=self,
-#             post=[
-#                 upload_image(
-#                     image_repo_name, self.repository_uri_str, file_name, file_path
-#                 )
-#             ],
-#         )
-#         self.repository_uri = CfnOutput(self, "RepoUri", value=self.repo.repository_uri)
