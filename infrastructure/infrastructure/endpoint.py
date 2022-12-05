@@ -5,6 +5,7 @@ from constructs import Construct
 from aws_cdk import aws_iam as iam
 from aws_cdk import RemovalPolicy
 from aws_cdk.aws_sagemaker import CfnModel
+from aws_cdk.aws_ecr_assets import DockerImageAsset
 
 # TODO change once bug fixing is done
 INSTANCE_TYPE = "ml.t2.medium"
@@ -12,9 +13,7 @@ realinstancetypetochangeto = "ml.p2.xlarge"
 
 
 class EndpointStack(Stack):
-    def __init__(
-        self, scope: Construct, construct_id: str, image_uri=None, **kwargs
-    ) -> None:
+    def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         # async output bucket
@@ -48,16 +47,19 @@ class EndpointStack(Stack):
                 iam.ManagedPolicy.from_aws_managed_policy_name("AmazonS3FullAccess"),
             ],
         )
-        execution_role_arn = model_execution_role.role_arn
 
+        # create docker image
+        docker_image = DockerImageAsset(
+            self, "ModelImage", directory="../src/endpoint", file="Dockerfile.endpoint"
+        )
         # create model
         model = sagemaker.CfnModel(
             self,
             "Model",
-            execution_role_arn=execution_role_arn,
+            execution_role_arn=model_execution_role.role_arn,
             primary_container=CfnModel.ContainerDefinitionProperty(
                 environment={"MODEL_BUCKET_NAME": model_bucket.bucket_name},
-                image=image_uri,
+                image=docker_image.image_uri,
             ),
         )
 
