@@ -93,3 +93,12 @@ class EndpointStack(Stack):
             self, "EndpointName", value=self.endpoint.attr_endpoint_name
         )
         self.model_bucket_name = model_bucket.bucket_name
+
+        # create general image assets
+        general_image = DockerImageAsset(
+            self,
+            "GeneralImage",
+            directory="../src/endpoint",
+            file="Dockerfile",
+        )
+        self.general_image_uri = general_image.image_uri

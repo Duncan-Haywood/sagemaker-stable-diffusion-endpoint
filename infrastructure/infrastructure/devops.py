@@ -80,15 +80,10 @@ class EndpointStage(Stage):
         **kwargs,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
-        # create general image assets
-        docker_image = DockerImageAsset(
-            self, "ModelImage", directory="../src/endpoint", file="Dockerfile.endpoint"
-        )
-        self.general_image_uri = docker_image.image_uri
 
         # create endpoint stack
         self.app = EndpointStack(self, "EndpointStack")
-
+        self.general_image_uri = self.app.general_image_uri
         # add post processing steps
         pipelines.StackSteps(
             stack=self.app,
