@@ -86,7 +86,7 @@ class EndpointStage(Stage):
         self.app = EndpointStack(self, "EndpointStack")
 
         # add post processing steps with dependency graph
-        upload_model_step = upload_model_step(self.app.model_bucket_name)
+        upload_model_step = upload_model(self.app.model_bucket_name)
         upload_endpoint_step = set_endpoint_in_parameter_store(
             production, self.app.endpoint_name
         )
@@ -148,7 +148,7 @@ def set_endpoint_in_parameter_store(production, endpoint_name):
     )
 
 
-def upload_model_step(model_bucket_name):
+def upload_model(model_bucket_name):
     return pipelines.CodeBuildStep(
         "UploadModel",
         commands=[
@@ -159,24 +159,3 @@ def upload_model_step(model_bucket_name):
         ),
         env=dict(model_bucket_name=model_bucket_name),
     )
-
-
-# def upload_image(image_repo_name, repository_uri, file_name, file_path):
-#     return pipelines.CodeBuildStep(
-#         "Image",
-#         commands=[
-#             "docker build --tag $IMAGE_REPO_NAME --file $FILENAME $FILE_PATH",
-#             "docker tag $IMAGE_REPO_NAME $REPOSITORY_URI",
-#             "docker push $REPOSITORY_URI",
-#         ],
-#         build_environment=codebuild.BuildEnvironment(
-#             privileged=True, compute_type=codebuild.ComputeType.LARGE
-#         ),
-#         env=dict(
-#             IMAGE_REPO_NAME=image_repo_name,
-#             REPOSITORY_URI=repository_uri,
-#             FILENAME=file_name,
-#             FILE_PATH=file_path,
-#         ),
-#         cache=codebuild.Cache.local(codebuild.LocalCacheMode.DOCKER_LAYER),
-#     )
