@@ -19,15 +19,16 @@ class PipelineStack(Stack):
             synth=pipelines.CodeBuildStep(
                 "Synth",
                 input=source,
-                install_commands=[
-                    "cd infrastructure",
-                    "pip install poetry",
-                    "poetry install",
-                    "npm install -g aws-cdk",
-                ],
-                commands=[
-                    "poetry run cdk synth --output ../cdk.out",
-                ],
+                # install_commands=[
+                #     "cd infrastructure",
+                #     "pip install poetry",
+                #     "poetry install",
+                #     "npm install -g aws-cdk",
+                # ],
+                # commands=[
+                #     "poetry run cdk synth --output ../cdk.out",
+                # ],
+                commands=["cdk synth"]
             ),
             docker_enabled_for_self_mutation=True,
             # code_build_defaults=pipelines.CodeBuildOptions(
@@ -39,12 +40,15 @@ class PipelineStack(Stack):
             #     ),
             #     cache=codebuild.Cache.local(codebuild.LocalCacheMode.DOCKER_LAYER),
             # ),
-            # synth_code_build_defaults=pipelines.CodeBuildOptions(
-            #     build_environment=codebuild.BuildEnvironment(
-            #         compute_type=codebuild.ComputeType.MEDIUM,
-            #     ),
-            #     cache=codebuild.Cache.local(codebuild.LocalCacheMode.DOCKER_LAYER),
-            # ),
+            synth_code_build_defaults=pipelines.CodeBuildOptions(
+                build_environment=codebuild.BuildEnvironment(
+                    compute_type=codebuild.ComputeType.MEDIUM,
+                    build_image=codebuild.LinuxBuildImage.from_asset(
+                        self, "SynthImage", file="Dockerfile.synth"
+                    ),
+                ),
+                # cache=codebuild.Cache.local(codebuild.LocalCacheMode.DOCKER_LAYER),
+            ),
             # asset_publishing_code_build_defaults=pipelines.CodeBuildOptions(
             #     build_environment=codebuild.BuildEnvironment(
             #         compute_type=codebuild.ComputeType.LARGE,

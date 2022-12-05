@@ -1,0 +1,9 @@
+FROM aws/codebuild/standard:6.0	
+
+RUN pip install poetry
+COPY pyproject.toml poetry.lock /
+RUN poetry install
+COPY infrastructure cdk.json /
+
+ENTRYPOINT ["poetry", "run"]
+CMD ["cdk", "synth"]
