@@ -28,6 +28,7 @@ class PipelineStack(Stack):
                     "poetry run cdk synth --output ../cdk.out",
                 ],
             ),
+            docker_enabled_for_self_mutation=True,
             code_build_defaults=pipelines.CodeBuildOptions(
                 build_environment=codebuild.BuildEnvironment(
                     compute_type=codebuild.ComputeType.MEDIUM,
