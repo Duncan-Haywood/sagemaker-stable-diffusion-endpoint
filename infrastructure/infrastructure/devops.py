@@ -20,6 +20,7 @@ class PipelineStack(Stack):
                 "Synth",
                 input=source,
                 install_commands=[
+                    "cd infrastructure"
                     "pip install poetry",
                     "poetry install",
                     "npm install -g aws-cdk",
