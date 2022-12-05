@@ -30,66 +30,43 @@ class PipelineStack(Stack):
             ),
             code_build_defaults=pipelines.CodeBuildOptions(
                 build_environment=codebuild.BuildEnvironment(
-                    compute_type=codebuild.ComputeType.LARGE,
+                    compute_type=codebuild.ComputeType.MEDIUM,
                 )
             ),
             synth_code_build_defaults=pipelines.CodeBuildOptions(
                 build_environment=codebuild.BuildEnvironment(
-                    compute_type=codebuild.ComputeType.LARGE,
+                    compute_type=codebuild.ComputeType.MEDIUM,
                 )
             ),
             asset_publishing_code_build_defaults=pipelines.CodeBuildOptions(
                 build_environment=codebuild.BuildEnvironment(
-                    compute_type=codebuild.ComputeType.LARGE,
+                    compute_type=codebuild.ComputeType.MEDIUM,
                 )
             ),
             self_mutation_code_build_defaults=pipelines.CodeBuildOptions(
                 build_environment=codebuild.BuildEnvironment(
-                    compute_type=codebuild.ComputeType.LARGE,
+                    compute_type=codebuild.ComputeType.MEDIUM,
                 )
             ),
         )
-
-        asset_stage = AssetStage(self, "AssetStage")
-        general_image_uri = asset_stage.general_image_uri
-        sagemaker_image_uri = asset_stage.sagemaker_image_uri
-
-        self.pipeline.add_stage(asset_stage)
-
-        self.pipeline.add_stage(
-            EndpointStage(
-                self,
-                "TestStage",
-                production=False,
-                general_image_uri=general_image_uri,
-                sagemaker_image_uri=sagemaker_image_uri,
-            ),
-            pre=[unit_tests(general_image_uri)],
-            post=[integration_tests(general_image_uri)],
+        test_stage = EndpointStage(
+            self,
+            "TestStage",
+            production=False,
         )
-
         self.pipeline.add_stage(
-            EndpointStage(
-                self,
-                "ProdStage",
-                production=True,
-                general_image_uri=general_image_uri,
-                sagemaker_image_uri=sagemaker_image_uri,
-            ),
+            test_stage, post=[integration_tests(test_stage.general_image_uri)]
+        )
+        prod_stage = EndpointStage(
+            self,
+            "ProdStage",
+            production=True,
+        )
+        self.pipeline.add_stage(
+            prod_stage,
             pre=[pipelines.ManualApprovalStep("PromoteToProd")],
-            post=[integration_tests(general_image_uri)],
+            post=[integration_tests(prod_stage.general_image_uri)],
         )
-
-
-class AssetStage(Stage):
-    def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
-        super().__init__(scope, construct_id, **kwargs)
-        self.general_ecr = AssetStack(self, "GeneralECR")
-        self.sagemaker_ecr = AssetStack(
-            self, "SagemakerEndpointECR", file_name="Dockerfile.endpoint"
-        )
-        self.sagemaker_image_uri = self.general_ecr.repository_uri_str
-        self.general_image_uri = self.sagemaker_ecr.repository_uri
 
 
 class EndpointStage(Stage):
@@ -97,27 +74,43 @@ class EndpointStage(Stage):
         self,
         scope: Construct,
         construct_id: str,
-        general_image_uri=None,
-        sagemaker_image_uri=None,
         production: bool = False,
         **kwargs,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
-        # create stacks
-        self.app = EndpointStack(self, "EndpointStack", image_uri=sagemaker_image_uri)
+        # create general image assets
+        self.general_ecr = AssetStack(self, "GeneralECR")
+        self.general_image_uri = self.sagemaker_ecr.repository_uri
+        # run unit tests
+        pipelines.StackSteps(
+            stack=self.general_ecr, post=[unit_tests(self.general_image_uri)]
+        )
+
+        # create sagemaker endpoint assets
+        self.sagemaker_ecr = AssetStack(
+            self, "SagemakerEndpointECR", file_name="Dockerfile.endpoint"
+        )
+        self.sagemaker_image_uri = self.general_ecr.repository_uri
+
+        # create endpoint stack
+        self.app = EndpointStack(
+            self, "EndpointStack", image_uri=self.sagemaker_image_uri
+        )
+        self.app.add_dependency(self.sagemaker_ecr)
+
         # add post processing steps
         pipelines.StackSteps(
             stack=self.app,
             post=[
-                upload_model_step(general_image_uri, self.app.model_bucket_name),
+                upload_model_step(self.general_image_uri, self.app.model_bucket_name),
                 set_endpoint_in_parameter_store(
-                    general_image_uri, production, self.app.endpoint_name
+                    self.general_image_uri, production, self.app.endpoint_name
                 ),
             ],
         )
 
 
-## variables and functions referenced above
+## functions referenced above
 
 
 def unit_tests(image_uri):
