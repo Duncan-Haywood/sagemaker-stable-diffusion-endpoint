@@ -111,7 +111,7 @@ class EndpointStage(Stage):
 class GeneralImageStack(Stack):
     def __init__(
         self,
-        scope: Constrt,
+        scope: Construct,
         construct_id: str,
         **kwargs,
     ) -> None:
