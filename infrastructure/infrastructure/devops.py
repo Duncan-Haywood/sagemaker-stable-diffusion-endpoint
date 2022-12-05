@@ -40,8 +40,7 @@ class PipelineStack(Stack):
             synth_code_build_defaults=pipelines.CodeBuildOptions(
                 build_environment=codebuild.BuildEnvironment(
                     compute_type=codebuild.ComputeType.MEDIUM,
-                    # cache=codebuild.Cache.local(codebuild.),
-                )
+                ),
             ),
             asset_publishing_code_build_defaults=pipelines.CodeBuildOptions(
                 build_environment=codebuild.BuildEnvironment(
