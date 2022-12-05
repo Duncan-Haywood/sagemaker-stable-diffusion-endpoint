@@ -50,8 +50,8 @@ class PipelineStack(Stack):
             ),
             self_mutation_code_build_defaults=pipelines.CodeBuildOptions(
                 build_environment=codebuild.BuildEnvironment(
-                    compute_type=codebuild.ComputeType.MEDIUM,
-                )
+                    compute_type=codebuild.ComputeType.MEDIUM, privileged=True
+                ),
             ),
         )
         self.pipeline.add_stage(
