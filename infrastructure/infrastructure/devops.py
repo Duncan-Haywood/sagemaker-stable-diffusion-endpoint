@@ -80,7 +80,7 @@ class EndpointStage(Stage):
         super().__init__(scope, construct_id, **kwargs)
         # create general image assets
         self.general_ecr = AssetStack(self, "GeneralECR")
-        self.general_image_uri = self.sagemaker_ecr.repository_uri
+        self.general_image_uri = self.general_ecr.repository_uri
         # run unit tests
         pipelines.StackSteps(
             stack=self.general_ecr, post=[unit_tests(self.general_image_uri)]
@@ -90,7 +90,7 @@ class EndpointStage(Stage):
         self.sagemaker_ecr = AssetStack(
             self, "SagemakerEndpointECR", file_name="Dockerfile.endpoint"
         )
-        self.sagemaker_image_uri = self.general_ecr.repository_uri
+        self.sagemaker_image_uri = self.sagemaker_ecr.repository_uri
 
         # create endpoint stack
         self.app = EndpointStack(
