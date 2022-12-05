@@ -51,23 +51,20 @@ class PipelineStack(Stack):
                 )
             ),
         )
-        test_stage = EndpointStage(
-            self,
-            "TestStage",
-            production=False,
+        self.pipeline.add_stage(
+            EndpointStage(
+                self,
+                "TestStage",
+                production=False,
+            ),
         )
         self.pipeline.add_stage(
-            test_stage, post=[integration_tests(test_stage.general_image_uri)]
-        )
-        prod_stage = EndpointStage(
-            self,
-            "ProdStage",
-            production=True,
-        )
-        self.pipeline.add_stage(
-            prod_stage,
+            EndpointStage(
+                self,
+                "ProdStage",
+                production=True,
+            ),
             pre=[pipelines.ManualApprovalStep("PromoteToProd")],
-            post=[integration_tests(prod_stage.general_image_uri)],
         )
 
 
@@ -80,24 +77,53 @@ class EndpointStage(Stage):
         **kwargs,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
-
+        # create general image for tests
+        general_image = GeneralImageStack(self, "GeneralImageStack")
+        self.general_image_uri = general_image.general_image_uri
+        # run unit tests
+        pipelines.StackSteps(
+            stack=general_image, post=[unit_tests(self.general_image_uri)]
+        )
         # create endpoint stack
         self.app = EndpointStack(self, "EndpointStack")
         self.general_image_uri = self.app.general_image_uri
-        # add post processing steps
+
+        # add post processing steps with dependency graph
+        upload_model_step = upload_model_step(
+            self.general_image_uri, self.app.model_bucket_name
+        )
+        upload_endpoint_step = set_endpoint_in_parameter_store(
+            self.general_image_uri, production, self.app.endpoint_name
+        )
+        integration_test_step = integration_tests(self.general_image_uri)
+        integration_test_step.add_step_dependency(upload_endpoint_step)
+        integration_test_step.add_step_dependency(upload_model_step)
+
         pipelines.StackSteps(
             stack=self.app,
-            pre=[unit_tests(self.general_image_uri)],
-            post=[
-                upload_model_step(self.general_image_uri, self.app.model_bucket_name),
-                set_endpoint_in_parameter_store(
-                    self.general_image_uri, production, self.app.endpoint_name
-                ),
-            ],
+            post=[upload_model_step, upload_endpoint_step, integration_test_step],
         )
 
 
 ## functions referenced above
+
+
+class GeneralImageStack(Stack):
+    def __init__(
+        self,
+        scope: Constrt,
+        construct_id: str,
+        **kwargs,
+    ) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+        # create general image assets
+        general_image = DockerImageAsset(
+            self,
+            "GeneralImage",
+            directory="../src/endpoint",
+            file="Dockerfile",
+        )
+        self.general_image_uri = general_image.image_uri
 
 
 def unit_tests(image_uri):
