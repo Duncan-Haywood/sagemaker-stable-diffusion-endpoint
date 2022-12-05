@@ -1,9 +1,7 @@
 from constructs import Construct
-from aws_cdk import Stack, pipelines, Stage, CfnOutput
+from aws_cdk import Stack, pipelines, Stage
 from infrastructure.endpoint import EndpointStack
 from aws_cdk import aws_codebuild as codebuild
-from aws_cdk import aws_ecr as ecr
-from aws_cdk.aws_ecr_assets import DockerImageAsset
 
 OWNER_REPO = "Duncan-Haywood/diffusion-endpoint"
 BRANCH = "main"
