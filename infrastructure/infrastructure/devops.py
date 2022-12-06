@@ -20,10 +20,10 @@ class PipelineStack(Stack):
                 "Synth",
                 input=source,
                 install_commands=[
-                    "cd infrastructure",
-                    "pip install poetry",
-                    "poetry install",
                     "npm install -g aws-cdk",
+                    "pip install poetry",
+                    "cd infrastructure",
+                    "poetry install",
                 ],
                 commands=[
                     "poetry run cdk synth --output ../cdk.out",
@@ -46,7 +46,7 @@ class PipelineStack(Stack):
             #             self, "SynthImage", directory="./", file="Dockerfile.synth"
             #         ),
             #     ),
-                # cache=codebuild.Cache.local(codebuild.LocalCacheMode.DOCKER_LAYER),
+            # cache=codebuild.Cache.local(codebuild.LocalCacheMode.DOCKER_LAYER),
             # ),
             # asset_publishing_code_build_defaults=pipelines.CodeBuildOptions(
             #     build_environment=codebuild.BuildEnvironment(
