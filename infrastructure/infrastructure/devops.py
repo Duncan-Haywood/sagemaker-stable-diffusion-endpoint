@@ -39,27 +39,12 @@ class PipelineStack(Stack):
                 ),
                 cache=codebuild.Cache.local(codebuild.LocalCacheMode.DOCKER_LAYER),
             ),
-            # synth_code_build_defaults=pipelines.CodeBuildOptions(
-            #     build_environment=codebuild.BuildEnvironment(
-            #         compute_type=codebuild.ComputeType.MEDIUM,
-            #         build_image=codebuild.LinuxBuildImage.from_asset(
-            #             self, "SynthImage", directory="./", file="Dockerfile.synth"
-            #         ),
-            #     ),
-            # cache=codebuild.Cache.local(codebuild.LocalCacheMode.DOCKER_LAYER),
-            # ),
             asset_publishing_code_build_defaults=pipelines.CodeBuildOptions(
                 build_environment=codebuild.BuildEnvironment(
                     compute_type=codebuild.ComputeType.LARGE,
                 ),
                 cache=codebuild.Cache.local(codebuild.LocalCacheMode.DOCKER_LAYER),
             ),
-            # self_mutation_code_build_defaults=pipelines.CodeBuildOptions(
-            #     build_environment=codebuild.BuildEnvironment(
-            #         compute_type=codebuild.ComputeType.MEDIUM, privileged=True
-            #     ),
-            #     cache=codebuild.Cache.local(codebuild.LocalCacheMode.DOCKER_LAYER),
-            # ),
         )
         self.pipeline.add_stage(
             EndpointStage(
