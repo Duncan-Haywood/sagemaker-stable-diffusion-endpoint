@@ -44,7 +44,7 @@ class PipelineStack(Stack):
                 build_environment=codebuild.BuildEnvironment(
                     compute_type=codebuild.ComputeType.MEDIUM,
                     build_image=codebuild.LinuxBuildImage.from_asset(
-                        self, "SynthImage", file="Dockerfile.synth"
+                        self, "SynthImage", directory="./", file="Dockerfile.synth"
                     ),
                 ),
                 # cache=codebuild.Cache.local(codebuild.LocalCacheMode.DOCKER_LAYER),
