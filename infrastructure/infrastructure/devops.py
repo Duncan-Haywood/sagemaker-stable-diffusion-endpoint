@@ -48,12 +48,12 @@ class PipelineStack(Stack):
             #     ),
             # cache=codebuild.Cache.local(codebuild.LocalCacheMode.DOCKER_LAYER),
             # ),
-            # asset_publishing_code_build_defaults=pipelines.CodeBuildOptions(
-            #     build_environment=codebuild.BuildEnvironment(
-            #         compute_type=codebuild.ComputeType.LARGE,
-            #     ),
-            #     cache=codebuild.Cache.local(codebuild.LocalCacheMode.DOCKER_LAYER),
-            # ),
+            asset_publishing_code_build_defaults=pipelines.CodeBuildOptions(
+                build_environment=codebuild.BuildEnvironment(
+                    compute_type=codebuild.ComputeType.LARGE,
+                ),
+                cache=codebuild.Cache.local(codebuild.LocalCacheMode.DOCKER_LAYER),
+            ),
             # self_mutation_code_build_defaults=pipelines.CodeBuildOptions(
             #     build_environment=codebuild.BuildEnvironment(
             #         compute_type=codebuild.ComputeType.MEDIUM, privileged=True
