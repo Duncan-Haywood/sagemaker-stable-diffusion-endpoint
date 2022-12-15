@@ -64,8 +64,7 @@ class PipelineStack(Stack):
             ),
             asset_publishing_code_build_defaults=pipelines.CodeBuildOptions(
                 build_environment=codebuild.BuildEnvironment(
-                    compute_type=codebuild.ComputeType.LARGE,
-                    privileged=True
+                    compute_type=codebuild.ComputeType.LARGE, privileged=True
                 ),
                 # cache=codebuild.Cache.local(codebuild.LocalCacheMode.DOCKER_LAYER),
                 cache=codebuild.Cache.bucket(bucket=asset_cache_bucket),

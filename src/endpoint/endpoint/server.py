@@ -7,6 +7,7 @@ from sagemaker_inference import model_server
 from .logger import get_logger
 import sys
 import shlex
+
 logger = get_logger(__name__)
 
 
