@@ -26,6 +26,12 @@ class PipelineStack(Stack):
             removal_policy=RemovalPolicy.DESTROY,
             auto_delete_objects=True,
         )
+        asset_cache_bucket = s3.Bucket(
+            self,
+            "AssetCacheBucket",
+            removal_policy=RemovalPolicy.DESTROY,
+            auto_delete_objects=True,
+        )
         self.pipeline = pipelines.CodePipeline(
             self,
             "Pipeline",
@@ -59,8 +65,10 @@ class PipelineStack(Stack):
             asset_publishing_code_build_defaults=pipelines.CodeBuildOptions(
                 build_environment=codebuild.BuildEnvironment(
                     compute_type=codebuild.ComputeType.LARGE,
+                    privileged=True
                 ),
-                cache=codebuild.Cache.local(codebuild.LocalCacheMode.DOCKER_LAYER),
+                # cache=codebuild.Cache.local(codebuild.LocalCacheMode.DOCKER_LAYER),
+                cache=codebuild.Cache.bucket(bucket=asset_cache_bucket),
             ),
         )
         self.pipeline.add_stage(
