@@ -48,8 +48,3 @@ def test_model_exists():
 def test_main(bucket_name_env):
     with mock_s3():
         upload_model.main()
-
-
-@pytest.mark.skip(reason="redundant")
-def test_lambda_handler():
-    upload_model.lambda_handler(None, None)

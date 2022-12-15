@@ -124,7 +124,7 @@ def unit_tests():
         "UnitTest",
         install_commands=["pip install poetry", "poetry install"],
         commands=[
-            "poetry run pytest --docker-local --upload-model -n $(nproc)",
+            "poetry run pytest --upload-model -n $(nproc)",
         ],
         build_environment=codebuild.BuildEnvironment(
             privileged=True,
