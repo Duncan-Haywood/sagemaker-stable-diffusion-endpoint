@@ -52,3 +52,4 @@ EXPOSE 8080
 
 # starts the server which will handle sagemaker requests.
 ENTRYPOINT [ "poetry","run", "python", "opt/program/endpoint/server.py" ]
+CMD ["serve"]
