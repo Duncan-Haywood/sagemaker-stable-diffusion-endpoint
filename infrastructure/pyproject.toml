@@ -8,7 +8,6 @@ license = "Prop"
 [tool.poetry.dependencies]
 python = "^3.8"
 aws-cdk-lib = "^2.45.0"
-boto3 = "^1.26.12"
 
 [tool.poetry.dev-dependencies]
 

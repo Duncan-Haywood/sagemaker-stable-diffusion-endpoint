@@ -1,7 +1,8 @@
 from constructs import Construct
-from aws_cdk import Stack, pipelines, Stage
+from aws_cdk import Stack, pipelines, Stage, RemovalPolicy
 from infrastructure.endpoint import EndpointStack
 from aws_cdk import aws_codebuild as codebuild
+from aws_cdk import aws_s3 as s3
 
 OWNER_REPO = "Duncan-Haywood/diffusion-endpoint"
 BRANCH = "main"
@@ -13,6 +14,12 @@ class PipelineStack(Stack):
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
         source = pipelines.CodePipelineSource.git_hub(OWNER_REPO, branch)
+        cache_bucket = s3.Bucket(
+            self,
+            "CacheBucket",
+            removal_policy=RemovalPolicy.DESTROY,
+            auto_delete_objects=True,
+        )
         self.pipeline = pipelines.CodePipeline(
             self,
             "Pipeline",
@@ -21,23 +28,23 @@ class PipelineStack(Stack):
                 input=source,
                 install_commands=[
                     "npm install -g aws-cdk",
-                    "pip install poetry",
+                    "pip install aws-cdk-lib",
                     "cd infrastructure",
-                    "poetry install",
                 ],
                 commands=[
-                    "poetry run cdk synth --output ../cdk.out",
+                    "cdk synth --output ../cdk.out",
                 ],
             ),
             docker_enabled_for_self_mutation=True,
             code_build_defaults=pipelines.CodeBuildOptions(
                 build_environment=codebuild.BuildEnvironment(
                     compute_type=codebuild.ComputeType.LARGE,
-                    build_image=codebuild.LinuxBuildImage.from_asset(
-                        self, "GeneralBuildImage", directory="../src/endpoint"
-                    ),
+                    # build_image=codebuild.LinuxBuildImage.from_asset(
+                    #     self, "GeneralBuildImage", directory="../src/endpoint"
+                    # ),
+                    privileged=True,
                 ),
-                cache=codebuild.Cache.local(codebuild.LocalCacheMode.DOCKER_LAYER),
+                cache=codebuild.Cache.bucket(bucket=cache_bucket),
             ),
             asset_publishing_code_build_defaults=pipelines.CodeBuildOptions(
                 build_environment=codebuild.BuildEnvironment(
@@ -98,8 +105,9 @@ class EndpointStage(Stage):
 def unit_tests():
     return pipelines.CodeBuildStep(
         "UnitTest",
+        install_commands=["pip install poetry", "poetry install"],
         commands=[
-            "pytest --docker-local --upload-model -n $(nproc)",
+            "poetry run pytest --docker-local --upload-model -n $(nproc)",
         ],
         build_environment=codebuild.BuildEnvironment(
             privileged=True,
@@ -111,8 +119,9 @@ def unit_tests():
 def integration_tests():
     return pipelines.CodeBuildStep(
         "UnitTest",
+        install_commands=["pip install poetry", "poetry install"],
         commands=[
-            "pytest --local-integration --integration -n $(nproc)",
+            "poetry run pytest --local-integration --integration -n $(nproc)",
         ],
         build_environment=codebuild.BuildEnvironment(
             privileged=True,
@@ -124,8 +133,9 @@ def integration_tests():
 def set_endpoint_in_parameter_store(production, endpoint_name):
     return pipelines.CodeBuildStep(
         "SetEndpointNameInParameterStore",
+        install_commands=["pip install poetry", "poetry install"],
         commands=[
-            "python ./endpoint/param_store_endpoint_name.py",
+            "poetry run python ./endpoint/param_store_endpoint_name.py",
         ],
         build_environment=codebuild.BuildEnvironment(
             compute_type=codebuild.ComputeType.MEDIUM,
@@ -142,8 +152,9 @@ def set_endpoint_in_parameter_store(production, endpoint_name):
 def upload_model(model_bucket_name):
     return pipelines.CodeBuildStep(
         "UploadModel",
+        install_commands=["pip install poetry", "poetry install"],
         commands=[
-            "python ./endpoint/upload_model.py",
+            "poetry run python ./endpoint/upload_model.py",
         ],
         build_environment=codebuild.BuildEnvironment(
             compute_type=codebuild.ComputeType.LARGE,
