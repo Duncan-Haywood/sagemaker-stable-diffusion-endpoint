@@ -48,5 +48,7 @@ ENV PATH="/opt/program:${PATH}"
 # Set up the program in the image
 COPY endpoint /opt/program/
 
+EXPOSE 8080
+
 # starts the server which will handle sagemaker requests.
 ENTRYPOINT [ "poetry","run", "python", "opt/program/endpoint/server.py" ]
