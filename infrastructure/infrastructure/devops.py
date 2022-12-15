@@ -39,9 +39,6 @@ class PipelineStack(Stack):
             code_build_defaults=pipelines.CodeBuildOptions(
                 build_environment=codebuild.BuildEnvironment(
                     compute_type=codebuild.ComputeType.LARGE,
-                    # build_image=codebuild.LinuxBuildImage.from_asset(
-                    #     self, "GeneralBuildImage", directory="../src/endpoint"
-                    # ),
                     privileged=True,
                 ),
                 cache=codebuild.Cache.bucket(bucket=cache_bucket),
