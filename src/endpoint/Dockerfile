@@ -2,8 +2,8 @@
 # for serving inferences in a stable way.
 
 # GPU enabled image
-# FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
-FROM 763104351884.dkr.ecr.us-east-1.amazonaws.com/huggingface-pytorch-inference:1.10.2-transformers4.17.0-gpu-py38-cu113-ubuntu20.04
+FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
+# FROM 763104351884.dkr.ecr.us-east-1.amazonaws.com/huggingface-pytorch-inference:1.10.2-transformers4.17.0-gpu-py38-cu113-ubuntu20.04
 
 # Install necessary dependencies for MMS and SageMaker Inference Toolkit
 RUN apt-get -y update
