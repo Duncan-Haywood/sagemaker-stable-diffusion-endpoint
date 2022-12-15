@@ -35,8 +35,8 @@ class PipelineStack(Stack):
                 install_commands=[
                     "npm install -g aws-cdk",
                     "pip install poetry",
-                    "poetry install",
                     "cd infrastructure",
+                    "poetry install",
                 ],
                 commands=[
                     "cdk synth --output ../cdk.out",
