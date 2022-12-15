@@ -76,6 +76,7 @@ class PipelineStack(Stack):
                 "TestStage",
                 production=False,
             ),
+            pre=[unit_tests()],
         )
         self.pipeline.add_stage(
             EndpointStage(
@@ -111,7 +112,6 @@ class EndpointStage(Stage):
 
         pipelines.StackSteps(
             stack=self.app,
-            pre=[unit_tests()],
             post=[upload_model_step, upload_endpoint_step, integration_test_step],
         )
 
