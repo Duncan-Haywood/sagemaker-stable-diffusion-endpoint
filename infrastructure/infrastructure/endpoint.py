@@ -52,7 +52,7 @@ class EndpointStack(Stack):
         docker_image = DockerImageAsset(
             self, "ModelImage", directory="../src/endpoint", file="Dockerfile.endpoint"
         )
-        # create model
+        # create model and pass in model bucket name
         model = sagemaker.CfnModel(
             self,
             "Model",
