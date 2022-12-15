@@ -2,7 +2,7 @@
 # for serving inferences in a stable way.
 
 # GPU enabled image
-FROM public.ecr.aws/alexaprizesharedresources/nvidia/cuda:9.0-base
+FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
 
 # Install necessary dependencies for MMS and SageMaker Inference Toolkit
 RUN apt-get -y update
