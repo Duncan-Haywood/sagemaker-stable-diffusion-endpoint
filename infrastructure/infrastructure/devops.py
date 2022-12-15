@@ -20,6 +20,12 @@ class PipelineStack(Stack):
             removal_policy=RemovalPolicy.DESTROY,
             auto_delete_objects=True,
         )
+        synth_cache_bucket = s3.Bucket(
+            self,
+            "SynthCacheBucket",
+            removal_policy=RemovalPolicy.DESTROY,
+            auto_delete_objects=True,
+        )
         self.pipeline = pipelines.CodePipeline(
             self,
             "Pipeline",
@@ -28,8 +34,8 @@ class PipelineStack(Stack):
                 input=source,
                 install_commands=[
                     "npm install -g aws-cdk",
-                    "pip install aws-cdk-lib",
-                    "cd infrastructure",
+                    "pip install poetry",
+                    "poetry install" "cd infrastructure",
                 ],
                 commands=[
                     "cdk synth --output ../cdk.out",
@@ -42,6 +48,12 @@ class PipelineStack(Stack):
                     privileged=True,
                 ),
                 cache=codebuild.Cache.bucket(bucket=cache_bucket),
+            ),
+            synth_code_build_defaults=pipelines.CodeBuildOptions(
+                build_environment=codebuild.BuildEnvironment(
+                    compute_type=codebuild.ComputeType.MEDIUM,
+                ),
+                cache=codebuild.Cache.bucket(bucket=synth_cache_bucket),
             ),
             asset_publishing_code_build_defaults=pipelines.CodeBuildOptions(
                 build_environment=codebuild.BuildEnvironment(
