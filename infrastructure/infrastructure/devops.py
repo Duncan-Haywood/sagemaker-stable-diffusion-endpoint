@@ -77,6 +77,7 @@ class PipelineStack(Stack):
                 production=False,
             ),
             pre=[unit_tests()],
+            post=[integration_tests()],
         )
         self.pipeline.add_stage(
             EndpointStage(
@@ -85,6 +86,7 @@ class PipelineStack(Stack):
                 production=True,
             ),
             pre=[pipelines.ManualApprovalStep("PromoteToProd")],
+            post=[integration_tests()],
         )
 
 
@@ -101,18 +103,13 @@ class EndpointStage(Stage):
         # create endpoint stack
         self.app = EndpointStack(self, "EndpointStack")
 
-        # add post processing steps with dependency graph
-        upload_model_step = upload_model(self.app.model_bucket_name)
-        upload_endpoint_step = set_endpoint_in_parameter_store(
-            production, self.app.endpoint_name
-        )
-        integration_test_step = integration_tests()
-        integration_test_step.add_step_dependency(upload_endpoint_step)
-        integration_test_step.add_step_dependency(upload_model_step)
-
+        # add post processing steps
         pipelines.StackSteps(
             stack=self.app,
-            post=[upload_model_step, upload_endpoint_step, integration_test_step],
+            post=[
+                upload_model(self.app.model_bucket_name),
+                set_endpoint_in_parameter_store(production, self.app.endpoint_name),
+            ],
         )
 
 
@@ -136,7 +133,7 @@ def unit_tests():
 def integration_tests():
     return pipelines.CodeBuildStep(
         "UnitTest",
-        install_commands=["pip install poetry","cd src/endpoint", "poetry install"],
+        install_commands=["pip install poetry", "cd src/endpoint", "poetry install"],
         commands=[
             "poetry run pytest --local-integration --integration -n $(nproc)",
         ],
@@ -150,7 +147,7 @@ def integration_tests():
 def set_endpoint_in_parameter_store(production, endpoint_name):
     return pipelines.CodeBuildStep(
         "SetEndpointNameInParameterStore",
-        install_commands=["pip install poetry","cd src/endpoint", "poetry install"],
+        install_commands=["pip install poetry", "cd src/endpoint", "poetry install"],
         commands=[
             "poetry run python ./endpoint/param_store_endpoint_name.py",
         ],
