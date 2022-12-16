@@ -132,7 +132,7 @@ def unit_tests():
 
 def integration_tests():
     return pipelines.CodeBuildStep(
-        "UnitTest",
+        "IntegrationTest",
         install_commands=["pip install poetry", "cd src/endpoint", "poetry install"],
         commands=[
             "poetry run pytest --local-integration --integration -n $(nproc)",
