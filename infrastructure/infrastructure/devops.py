@@ -137,7 +137,7 @@ def integration_tests(production="True"):
         commands=[
             "poetry run pytest --local-integration --integration -n $(nproc)",
         ],
-        env=({"production":production})
+        env={"production": production},
         build_environment=codebuild.BuildEnvironment(
             privileged=True,
             compute_type=codebuild.ComputeType.LARGE,
