@@ -77,7 +77,7 @@ class PipelineStack(Stack):
                 production=False,
             ),
             pre=[unit_tests()],
-            post=[integration_tests()],
+            post=[integration_tests(production="False")],
         )
         self.pipeline.add_stage(
             EndpointStage(
@@ -130,13 +130,14 @@ def unit_tests():
     )
 
 
-def integration_tests():
+def integration_tests(production="True"):
     return pipelines.CodeBuildStep(
         "IntegrationTest",
         install_commands=["pip install poetry", "cd src/endpoint", "poetry install"],
         commands=[
             "poetry run pytest --local-integration --integration -n $(nproc)",
         ],
+        env=({"production":production})
         build_environment=codebuild.BuildEnvironment(
             privileged=True,
             compute_type=codebuild.ComputeType.LARGE,
