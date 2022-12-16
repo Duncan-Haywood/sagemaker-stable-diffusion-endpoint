@@ -122,7 +122,7 @@ class EndpointStage(Stage):
 def unit_tests():
     return pipelines.CodeBuildStep(
         "UnitTest",
-        install_commands=["pip install poetry", "poetry install"],
+        install_commands=["pip install poetry", "cd src/endpoint", "poetry install"],
         commands=[
             "poetry run pytest --upload-model -n $(nproc)",
         ],
@@ -136,7 +136,7 @@ def unit_tests():
 def integration_tests():
     return pipelines.CodeBuildStep(
         "UnitTest",
-        install_commands=["pip install poetry", "poetry install"],
+        install_commands=["pip install poetry","cd src/endpoint", "poetry install"],
         commands=[
             "poetry run pytest --local-integration --integration -n $(nproc)",
         ],
@@ -150,7 +150,7 @@ def integration_tests():
 def set_endpoint_in_parameter_store(production, endpoint_name):
     return pipelines.CodeBuildStep(
         "SetEndpointNameInParameterStore",
-        install_commands=["pip install poetry", "poetry install"],
+        install_commands=["pip install poetry","cd src/endpoint", "poetry install"],
         commands=[
             "poetry run python ./endpoint/param_store_endpoint_name.py",
         ],
@@ -169,7 +169,7 @@ def set_endpoint_in_parameter_store(production, endpoint_name):
 def upload_model(model_bucket_name):
     return pipelines.CodeBuildStep(
         "UploadModel",
-        install_commands=["pip install poetry", "poetry install"],
+        install_commands=["pip install poetry", "cd src/endpoint", "poetry install"],
         commands=[
             "poetry run python ./endpoint/upload_model.py",
         ],
