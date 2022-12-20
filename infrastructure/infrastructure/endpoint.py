@@ -8,7 +8,7 @@ from aws_cdk.aws_sagemaker import CfnModel
 from aws_cdk.aws_ecr_assets import DockerImageAsset
 
 # TODO change once bug fixing is done
-INSTANCE_TYPE = "ml.t2.medium"
+INSTANCE_TYPE = "ml.t2.xlarge"
 realinstancetypetochangeto = "ml.p2.xlarge"
 
 
