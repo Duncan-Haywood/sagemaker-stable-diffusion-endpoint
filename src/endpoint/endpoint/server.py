@@ -4,7 +4,7 @@ import subprocess
 from retrying import retry
 from subprocess import CalledProcessError
 from sagemaker_inference import model_server
-from .logger import get_logger
+from endpoint.logger import get_logger
 import sys
 import shlex
 
