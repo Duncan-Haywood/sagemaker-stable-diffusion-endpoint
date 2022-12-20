@@ -15,10 +15,10 @@ BASE_URL = "http://0.0.0.0:8080/"
 PING_URL = BASE_URL + "ping"
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="module", autouse=True)
 def docker_container():
     completed_process = subprocess.run(
-        ["docker build --file Dockerfile.endpoint --tag server-test .".split()],
+        "docker build --tag server-test .".split(),
         capture_output=True,
     )
     logger.info(completed_process.stdout)
@@ -26,9 +26,9 @@ def docker_container():
 
 
 @pytest.fixture(scope="module", autouse=True)
-def container(docker_container):
+def container():
     try:
-        command = "docker run --name server-test -p 8080:8080"
+        command = "docker run -p 8080:8080 server-test"
 
         proc = subprocess.Popen(
             command.split(), stdout=sys.stdout, stderr=subprocess.STDOUT

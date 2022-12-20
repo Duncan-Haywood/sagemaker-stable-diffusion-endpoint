@@ -46,10 +46,12 @@ ENV PYTHONDONTWRITEBYTECODE=TRUE
 ENV PATH="/opt/program:${PATH}"
 
 # Set up the program in the image
-COPY endpoint /opt/program/
+COPY endpoint /opt/program/endpoint/
+
+RUN poetry install
 
 EXPOSE 8080
 
 # starts the server which will handle sagemaker requests.
-ENTRYPOINT [ "poetry","run", "python", "opt/program/endpoint/server.py" ]
+ENTRYPOINT [ "poetry","run", "python", "/opt/program/endpoint/server.py" ]
 CMD ["serve"]
