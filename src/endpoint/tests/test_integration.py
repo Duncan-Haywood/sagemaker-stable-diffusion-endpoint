@@ -8,9 +8,8 @@ pytestmark = integration
 
 @pytest.fixture
 def image():
-    size = (512, 512)
-    mode = "RBG"
-    return Image.new(mode, size)
+
+    return Image.new(mode="RGB", size=(512,512))
 
 
 @pytest.fixture
