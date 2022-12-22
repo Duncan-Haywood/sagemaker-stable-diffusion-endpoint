@@ -3,6 +3,7 @@ from aws_cdk import Stack, pipelines, Stage, RemovalPolicy
 from infrastructure.endpoint import EndpointStack
 from aws_cdk import aws_codebuild as codebuild
 from aws_cdk import aws_s3 as s3
+from aws_cdk import aws_iam as iam
 
 OWNER_REPO = "Duncan-Haywood/diffusion-endpoint"
 BRANCH = "main"
@@ -142,6 +143,7 @@ def integration_tests(production="True"):
             privileged=True,
             compute_type=codebuild.ComputeType.LARGE,
         ),
+        role_policy_statements=[iam.PolicyStatement(actions=["ssm:GetParameter"], resources=["*"])]
     )
 
 
