@@ -75,7 +75,7 @@ class PipelineStack(Stack):
             EndpointStage(
                 self,
                 "TestStage",
-                production=False,
+                production="False",
             ),
             pre=[unit_tests()],
             post=[integration_tests(production="False")],
@@ -84,10 +84,10 @@ class PipelineStack(Stack):
             EndpointStage(
                 self,
                 "ProdStage",
-                production=True,
+                production="True",
             ),
             pre=[pipelines.ManualApprovalStep("PromoteToProd")],
-            post=[integration_tests()],
+            post=[integration_tests("True")],
         )
 
 
@@ -158,7 +158,7 @@ def set_endpoint_in_parameter_store(production, endpoint_name):
             compute_type=codebuild.ComputeType.MEDIUM,
         ),
         env={
-            "production": str(production),
+            "production": production,
         },
         env_from_cfn_outputs={
             "endpoint_name": endpoint_name,
