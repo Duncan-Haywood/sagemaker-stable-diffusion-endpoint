@@ -125,7 +125,7 @@ def get_endpoint_name():
     """gets endpoint name from ssm parameter store"""
     try:
         is_prod_bool = os.getenv("production", "True")
-        env = "production" if is_prod_bool == "True" or is_prod_bool else "test"
+        env = "production" if is_prod_bool == "True" else "test"
         param_store_name = f"endpoint_name/{env}"
         ssm = boto3.client("ssm")
         endpoint_name = ssm.get_parameter(Name=param_store_name)
