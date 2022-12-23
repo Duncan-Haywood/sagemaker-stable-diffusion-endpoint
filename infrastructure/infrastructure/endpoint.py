@@ -102,8 +102,8 @@ class EndpointStack(Stack):
             resource_id=f"sagemaker/{self.endpoint.attr_endpoint_name}",
             service_namespace=appscaling.ServiceNamespace.SAGEMAKER,
         )
-        scale_policy = target.scale_on_metric(
+        scale_policy = target.scale_to_track_metric(
             "InvocationScalingPolicy",
-            metric=appscaling.PredefinedMetric.SAGEMAKER_VARIANT_INVOCATIONS_PER_INSTANCE,
-            scaling_steps=[appscaling.ScalingInterval(change=1, lower=1, upper=1)],
+            predefined_metric=appscaling.PredefinedMetric.SAGEMAKER_VARIANT_INVOCATIONS_PER_INSTANCE,
+            target_value=1
         )
