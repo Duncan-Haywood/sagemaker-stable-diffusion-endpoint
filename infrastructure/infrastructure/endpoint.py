@@ -105,5 +105,5 @@ class EndpointStack(Stack):
         scale_policy = target.scale_to_track_metric(
             "InvocationScalingPolicy",
             predefined_metric=appscaling.PredefinedMetric.SAGEMAKER_VARIANT_INVOCATIONS_PER_INSTANCE,
-            target_value=1
+            target_value=1,
         )

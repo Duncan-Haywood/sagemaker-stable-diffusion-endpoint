@@ -146,7 +146,7 @@ def integration_tests(production="True"):
         role_policy_statements=[
             iam.PolicyStatement(actions=["ssm:GetParameter"], resources=["*"]),
             iam.PolicyStatement(actions=["s3:*"], resources=["*"]),
-
+            iam.PolicyStatement(actions=["sagemaker:*"], resources=["*"]),
         ],
     )
 
