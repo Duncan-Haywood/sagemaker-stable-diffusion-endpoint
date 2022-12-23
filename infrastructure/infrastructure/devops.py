@@ -143,7 +143,10 @@ def integration_tests(production="True"):
             privileged=True,
             compute_type=codebuild.ComputeType.LARGE,
         ),
-        role_policy_statements=[iam.PolicyStatement(actions=["ssm:GetParameter"], resources=["*"])]
+        role_policy_statements=[
+            iam.PolicyStatement(actions=["ssm:GetParameter"], resources=["*"])
+        ],
+ main
     )
 
 

@@ -9,4 +9,5 @@ def get_logger(name):
     formatter = jsonlogger.JsonFormatter()
     logHandler.setFormatter(formatter)
     logger.addHandler(logHandler)
+    logger.setLevel(logging.INFO)
     return logger
