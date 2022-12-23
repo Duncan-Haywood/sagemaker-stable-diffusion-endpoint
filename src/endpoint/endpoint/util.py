@@ -128,8 +128,11 @@ def get_endpoint_name():
         env = "production" if is_prod_bool == "True" else "test"
         param_store_name = f"/endpoint_name/{env}"
         ssm = boto3.client("ssm")
-        endpoint_name = ssm.get_parameter(Name=param_store_name)
+        response = ssm.get_parameter(Name=param_store_name)
         logger.info("get endpoint name succeeded")
+        logger.info("response: %s " % str(response))
+        endpoint_name = response["Parameter"]["Value"]
+        logger.info("endpoint name: %s" % endpoint_name)
         return endpoint_name
     except Exception as e:
         logger.exception("get endpoint name failed")
