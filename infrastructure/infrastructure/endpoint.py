@@ -6,6 +6,7 @@ from aws_cdk import aws_iam as iam
 from aws_cdk import RemovalPolicy
 from aws_cdk.aws_sagemaker import CfnModel
 from aws_cdk.aws_ecr_assets import DockerImageAsset
+from aws_cdk import aws_applicationautoscaling as appscaling
 
 # TODO change once bug fixing is done
 INSTANCE_TYPE = "ml.t2.xlarge"
@@ -91,3 +92,17 @@ class EndpointStack(Stack):
             self, "EndpointName", value=self.endpoint.attr_endpoint_name
         )
         self.model_bucket_name = model_bucket.bucket_name
+
+        target = appscaling.ScalableTarget(
+            self,
+            "ScaleEndpointTarget",
+            min_capacity=0,
+            max_capacity=3,
+            scalable_dimension="sagemaker:variant:DesiredInstanceCount",
+            resource_id=f"sagemaker/{self.endpoint.attr_endpoint_name}",
+            service_namespace=appscaling.ServiceNamespace.SAGEMAKER,
+        )
+        scale_policy = target.scale_on_metric(
+            "InvocationScalingPolicy",
+            metric=appscaling.PredefinedMetric.SAGEMAKER_VARIANT_INVOCATIONS_PER_INSTANCE,
+        )
