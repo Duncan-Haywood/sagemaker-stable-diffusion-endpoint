@@ -99,7 +99,7 @@ class EndpointStack(Stack):
             min_capacity=0,
             max_capacity=3,
             scalable_dimension="sagemaker:variant:DesiredInstanceCount",
-            resource_id=f"sagemaker:{self.endpoint.attr_endpoint_name}",
+            resource_id=f"endpoint/{self.endpoint.attr_endpoint_name}/variant/{endpoint_config.production_variants[0].variant_name}",
             service_namespace=appscaling.ServiceNamespace.SAGEMAKER,
         )
         scale_policy = target.scale_to_track_metric(
