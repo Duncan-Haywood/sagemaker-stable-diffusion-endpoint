@@ -87,7 +87,7 @@ class PipelineStack(Stack):
                 production="True",
             ),
             pre=[pipelines.ManualApprovalStep("PromoteToProd")],
-            post=[integration_tests("True")],
+            post=[integration_tests()],
         )
 
 
@@ -136,7 +136,7 @@ def integration_tests(production="True"):
         "IntegrationTest",
         install_commands=["pip install poetry", "cd src/predict", "poetry install"],
         commands=[
-            "poetry run pytest --integration -n $(nproc)",
+            "poetry run pytest --integration",
         ],
         env={"production": production},
         build_environment=codebuild.BuildEnvironment(
@@ -154,9 +154,9 @@ def integration_tests(production="True"):
 def set_endpoint_in_parameter_store(production, endpoint_name):
     return pipelines.CodeBuildStep(
         "SetEndpointNameInParameterStore",
-        install_commands=["pip install poetry", "cd src/endpoint", "poetry install"],
+        install_commands=["pip install poetry", "cd src/util", "poetry install"],
         commands=[
-            "poetry run python ./endpoint/param_store_endpoint_name.py",
+            "poetry run python ./util/param_store_endpoint_name.py",
         ],
         build_environment=codebuild.BuildEnvironment(
             compute_type=codebuild.ComputeType.MEDIUM,
