@@ -6,7 +6,7 @@ from aws_cdk import aws_s3 as s3
 from aws_cdk import aws_iam as iam
 
 OWNER_REPO = "Duncan-Haywood/diffusion-endpoint"
-BRANCH = "main"
+BRANCH = "v1"
 
 
 class PipelineStack(Stack):
