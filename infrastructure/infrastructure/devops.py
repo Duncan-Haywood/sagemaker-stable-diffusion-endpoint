@@ -136,7 +136,7 @@ def integration_tests(production="True"):
         "IntegrationTest",
         install_commands=["pip install poetry", "cd src/endpoint", "poetry install"],
         commands=[
-            "poetry run pytest --local-integration --integration -n $(nproc)",
+            "poetry run pytest --integration -n $(nproc)",
         ],
         env={"production": production},
         build_environment=codebuild.BuildEnvironment(
@@ -144,7 +144,9 @@ def integration_tests(production="True"):
             compute_type=codebuild.ComputeType.LARGE,
         ),
         role_policy_statements=[
-            iam.PolicyStatement(actions=["ssm:GetParameter"], resources=["*"])
+            iam.PolicyStatement(actions=["ssm:GetParameter"], resources=["*"]),
+            iam.PolicyStatement(actions=["s3:*"], resources=["*"]),
+
         ],
     )
 
