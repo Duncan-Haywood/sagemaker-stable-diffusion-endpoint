@@ -72,13 +72,11 @@ class PipelineStack(Stack):
             ),
         )
         # test stage
-        test_stage = (
-            EndpointStage(
-                self,
-                "TestStage",
-                production="False",
-            ),
+        test_stage = EndpointStage(
+            self,
+            "TestStage",
         )
+
         self.pipeline.add_stage(
             test_stage,
             pre=[unit_tests()],
@@ -92,7 +90,6 @@ class PipelineStack(Stack):
         prod_stage = EndpointStage(
             self,
             "ProdStage",
-            production="True",
         )
         self.pipeline.add_stage(
             prod_stage,
@@ -110,7 +107,6 @@ class EndpointStage(Stage):
         self,
         scope: Construct,
         construct_id: str,
-        production: bool = False,
         **kwargs,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
