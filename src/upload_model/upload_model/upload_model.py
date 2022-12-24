@@ -1,8 +1,8 @@
 """Run upload_huggingface_token.py before use -- a dependency."""
 from diffusers import StableDiffusionInpaintPipeline
-from . import util
+import util
 import torch
-from .logger import get_logger
+from logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -35,10 +35,10 @@ def save_model_local(model, local_dir):
 
 def get_config() -> dict:
     return dict(
-        model_id=util.get_model_repository(),
+        model_id="CompVis/stable-diffusion-v-1-4",
         local_dir="./model",
         bucket_name=util.get_model_bucket_name(),
-        key=util.get_model_s3_key(),
+        key="model",
         hugging_face_token=util.get_hugging_face_token(),
     )
 

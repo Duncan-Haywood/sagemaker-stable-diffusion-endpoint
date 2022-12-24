@@ -184,9 +184,9 @@ def set_endpoint_in_parameter_store(env, endpoint_name):
 def upload_model(model_bucket_name):
     return pipelines.CodeBuildStep(
         "UploadModel",
-        install_commands=["pip install poetry", "cd src/endpoint", "poetry install"],
+        install_commands=["pip install poetry", "cd src/upload_model", "poetry install"],
         commands=[
-            "poetry run python -m endpoint.upload_model",
+            "poetry run python -m upload_model.upload_model",
         ],
         build_environment=codebuild.BuildEnvironment(
             compute_type=codebuild.ComputeType.LARGE,
