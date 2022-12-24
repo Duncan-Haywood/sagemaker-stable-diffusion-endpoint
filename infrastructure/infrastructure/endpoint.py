@@ -91,7 +91,9 @@ class EndpointStack(Stack):
         self.endpoint_name = CfnOutput(
             self, "EndpointName", value=self.endpoint.attr_endpoint_name
         )
-        self.model_bucket_name = model_bucket.bucket_name
+        self.model_bucket_name = CfnOutput(
+            self, "ModelBucketName", value=model_bucket.bucket_name
+        )
 
         target = appscaling.ScalableTarget(
             self,
