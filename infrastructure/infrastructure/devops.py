@@ -76,14 +76,17 @@ class PipelineStack(Stack):
             self,
             "TestStage",
         )
-
         self.pipeline.add_stage(
             test_stage,
             pre=[unit_tests()],
             post=pipelines.Step.sequence(
-                set_endpoint_in_parameter_store("False", test_stage.app.endpoint_name),
-                upload_model(test_stage.app.model_bucket_name),
-                integration_tests(production="False"),
+                [
+                    set_endpoint_in_parameter_store(
+                        "False", test_stage.app.endpoint_name
+                    ),
+                    upload_model(test_stage.app.model_bucket_name),
+                    integration_tests(production="False"),
+                ]
             ),
         )
         # prod stage
@@ -95,9 +98,13 @@ class PipelineStack(Stack):
             prod_stage,
             pre=[pipelines.ManualApprovalStep("PromoteToProd")],
             post=pipelines.Step.sequence(
-                set_endpoint_in_parameter_store("False", prod_stage.app.endpoint_name),
-                upload_model(prod_stage.app.model_bucket_name),
-                integration_tests(production="False"),
+                [
+                    set_endpoint_in_parameter_store(
+                        "False", prod_stage.app.endpoint_name
+                    ),
+                    upload_model(prod_stage.app.model_bucket_name),
+                    integration_tests(production="False"),
+                ]
             ),
         )
 
