@@ -14,7 +14,7 @@ class Predictor:
             predictor, name="AysncDiffusionEndpoint"
         )
         self.waiter_config = sagemaker.async_inference.waiter_config.WaiterConfig(
-            delay=3
+            delay=10
         )
         logger.info("Predictor initialized")
 
