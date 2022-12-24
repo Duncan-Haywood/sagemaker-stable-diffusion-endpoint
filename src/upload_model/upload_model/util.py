@@ -64,6 +64,7 @@ def file_exists(bucket_name: str, key: str) -> bool:
     """checks whether a file exists; only works with buckets with fewer than 1000 files"""
     s3 = boto3.client("s3")
     response = s3.list_objects_v2(Bucket=bucket_name)
+    logger.info("response %s" % response)
     contents = response["Contents"]
     keys = [obj["Key"] for obj in contents]
     exists = key in keys
@@ -75,10 +76,10 @@ def get_model_bucket_name():
         model_bucket_name = os.getenv("model_bucket_name")
         if model_bucket_name is None:
             raise Exception("model_bucket_name in environment is not set")
-        logger.info("succeeded")
+        logger.info("succeeded get model bucket")
         return model_bucket_name
     except Exception as e:
-        logger.exception("failed")
+        logger.exception("failed get model bucket name")
         raise e
 
 

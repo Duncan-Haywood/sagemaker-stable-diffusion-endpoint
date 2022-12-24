@@ -35,6 +35,7 @@ def save_model_local(model, local_dir):
 
 def model_exists(bucket_name, key) -> bool:
     """checks whether model already exists in bucket"""
+    logger.info("checking if model exists")
     exists = util.file_exists(bucket_name, key)
     if exists:
         logger.info("model already exists")
