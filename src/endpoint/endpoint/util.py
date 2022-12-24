@@ -19,6 +19,7 @@ def download_from_s3(bucket_name: str, local_dir: str, key: str):
     except Exception as e:
         logger.exception("file download failed")
 
+
 def get_model_bucket_name():
     try:
         model_bucket_name = os.getenv("model_bucket_name")
@@ -39,4 +40,3 @@ def deserialize_sagemaker_input(bytesobj: bytes) -> Tuple[tuple, dict]:
 def serialize_sagemaker_output(response: Union[dict, tuple]) -> bytes:
     bytesobj = pickle.dumps(response)
     return bytesobj
-

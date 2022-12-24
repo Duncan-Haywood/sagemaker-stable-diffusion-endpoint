@@ -60,7 +60,6 @@ def upload_file_to_s3(bucket_name: str, local_dir: str, key: str):
         raise e
 
 
-
 def file_exists(bucket_name: str, key: str) -> bool:
     """checks whether a file exists; only works with buckets with fewer than 1000 files"""
     s3 = boto3.client("s3")
@@ -86,4 +85,3 @@ def get_model_bucket_name():
 def get_hugging_face_token():
     hugging_face_token = get_secret("huggingface_api_token")
     return hugging_face_token
-
