@@ -188,5 +188,5 @@ def upload_model(model_bucket_name):
         build_environment=codebuild.BuildEnvironment(
             compute_type=codebuild.ComputeType.LARGE,
         ),
-        env_from_cfn_outputs={"model_bucket_name":model_bucket_name},
+        env_from_cfn_outputs={"model_bucket_name": model_bucket_name},
     )
