@@ -65,7 +65,12 @@ def file_exists(bucket_name: str, key: str) -> bool:
     s3 = boto3.client("s3")
     response = s3.list_objects_v2(Bucket=bucket_name)
     logger.info("response %s" % response)
-    contents = response["Contents"]
+    try:
+        contents = response["Contents"]
+    except KeyError:
+        logger.exception("no contents")
+        exists = False
+        return exists
     keys = [obj["Key"] for obj in contents]
     exists = key in keys
     return exists
