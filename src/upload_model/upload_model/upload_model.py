@@ -30,10 +30,10 @@ def save_model_local(model, local_dir):
         raise e
 
 
-def model_exists(bucket_name, key) -> bool:
+def model_exists(bucket_name, folder_name) -> bool:
     """checks whether model already exists in bucket"""
     logger.info("checking if model exists")
-    exists = util.file_exists(bucket_name, key)
+    exists = util.folder_exists(bucket_name, folder_name)
     if exists:
         logger.info("model already exists")
     else:
@@ -47,13 +47,13 @@ def main():
     local_dir = "./model"
     bucket_name = util.get_model_bucket_name()
     logger.info("bucket_name = %s" % bucket_name)
-    key = "model"
+    folder = "model"
     hugging_face_token = util.get_hugging_face_token()
     # upload file
-    if not model_exists(bucket_name, key):
+    if not model_exists(bucket_name, folder):
         model = load_model(hugging_face_token)
         save_model_local(model, local_dir)
-        util.upload_file_to_s3(bucket_name, local_dir, key)
+        util.upload_folder_to_s3(bucket_name, local_dir, folder)
         logger.info("model uploaded to s3")
 
 

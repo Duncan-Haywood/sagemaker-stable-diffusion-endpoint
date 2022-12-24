@@ -2,7 +2,8 @@ import boto3
 from botocore.exceptions import ClientError
 import os
 from .logger import get_logger
-
+import awscli 
+import subprocess
 logger = get_logger(__name__)
 
 
@@ -45,6 +46,18 @@ def get_secret(secret_name):
     except Exception as e:
         logger.exception("secret not retrieved")
         raise e
+
+
+def upload_folder_to_s3(bucket_name: str,local_dir: str, folder: str):
+    command = f"aws s3 cp {local_dir} {bucket_name}/{folder} --recursive"
+    completed_process = subprocess.run(command.split(), capture_output=True)
+
+def folder_exists(bucket_name, folder_name):
+    s3 = boto3.client('s3')
+    if not path.endswith('/'):
+        path = path+'/' 
+    resp = s3.list_objects(Bucket=bucket_name, Prefix=folder_name, Delimiter='/',MaxKeys=1)
+    return 'Contents' in resp
 
 
 def upload_file_to_s3(bucket_name: str, local_dir: str, key: str):
