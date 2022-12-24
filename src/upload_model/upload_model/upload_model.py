@@ -33,16 +33,6 @@ def save_model_local(model, local_dir):
         raise e
 
 
-def get_config() -> dict:
-    return dict(
-        model_id="CompVis/stable-diffusion-v-1-4",
-        local_dir="./model",
-        bucket_name=util.get_model_bucket_name(),
-        key="model",
-        hugging_face_token=util.get_hugging_face_token(),
-    )
-
-
 def model_exists(bucket_name, key) -> bool:
     """checks whether model already exists in bucket"""
     exists = util.file_exists(bucket_name, key)
@@ -55,11 +45,18 @@ def model_exists(bucket_name, key) -> bool:
 
 def main():
     """Download model from hugging face model hub and upload to s3 bucket."""
-    d = get_config()
-    if not model_exists(d.bucket_name, d.key):
-        model = load_model(d.model_id, d.hugging_face_token)
-        save_model_local(model, d.local_dir)
-        util.upload_file_to_s3(d.bucket_name, d.local_dir, d.key)
+    # config
+    model_id = "CompVis/stable-diffusion-v-1-4"
+    local_dir = "./model"
+    bucket_name = util.get_model_bucket_name()
+    logger.info("bucket_name = %s" % bucket_name)
+    key = "model"
+    hugging_face_token = util.get_hugging_face_token()
+    # upload file
+    if not model_exists(bucket_name, key):
+        model = load_model(model_id, hugging_face_token)
+        save_model_local(model, local_dir)
+        util.upload_file_to_s3(bucket_name, local_dir, key)
         logger.info("model uploaded to s3")
 
 
