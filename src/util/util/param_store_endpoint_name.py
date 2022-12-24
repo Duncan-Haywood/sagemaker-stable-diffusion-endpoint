@@ -6,11 +6,11 @@ logger = get_logger(__name__)
 
 
 def main():
-    production = os.getenv("production")
+    env = os.getenv("env")
+    logger.info("env = %s" % env)
     endpoint_name = os.getenv("endpoint_name")
     logger.info("endpoint name = %s" % endpoint_name)
     ssm = boto3.client("ssm")
-    env = "production" if production == "True" else "test"
     param_name = f"/endpoint_name/{env}"
     logger.info("parameter name = %s" % param_name)
     try:

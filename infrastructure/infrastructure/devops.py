@@ -82,10 +82,10 @@ class PipelineStack(Stack):
             post=pipelines.Step.sequence(
                 [
                     set_endpoint_in_parameter_store(
-                        "False", test_stage.app.endpoint_name
+                        "test", test_stage.app.endpoint_name
                     ),
                     upload_model(test_stage.app.model_bucket_name),
-                    integration_tests(production="False"),
+                    integration_tests("test"),
                 ]
             ),
         )
@@ -100,10 +100,10 @@ class PipelineStack(Stack):
             post=pipelines.Step.sequence(
                 [
                     set_endpoint_in_parameter_store(
-                        "False", prod_stage.app.endpoint_name
+                        "prod", prod_stage.app.endpoint_name
                     ),
                     upload_model(prod_stage.app.model_bucket_name),
-                    integration_tests(production="False"),
+                    integration_tests("prod"),
                 ]
             ),
         )
@@ -139,14 +139,14 @@ def unit_tests():
     )
 
 
-def integration_tests(production="True"):
+def integration_tests(env):
     return pipelines.CodeBuildStep(
         "IntegrationTest",
         install_commands=["pip install poetry", "cd src/predict", "poetry install"],
         commands=[
             "poetry run pytest --integration",
         ],
-        env={"production": production},
+        env={"env": env},
         build_environment=codebuild.BuildEnvironment(
             privileged=True,
             compute_type=codebuild.ComputeType.LARGE,
@@ -159,7 +159,7 @@ def integration_tests(production="True"):
     )
 
 
-def set_endpoint_in_parameter_store(production, endpoint_name):
+def set_endpoint_in_parameter_store(env, endpoint_name):
     return pipelines.CodeBuildStep(
         "SetEndpointNameInParameterStore",
         install_commands=["pip install poetry", "cd src/util", "poetry install"],
@@ -170,7 +170,7 @@ def set_endpoint_in_parameter_store(production, endpoint_name):
             compute_type=codebuild.ComputeType.MEDIUM,
         ),
         env={
-            "production": production,
+            "env": env,
         },
         env_from_cfn_outputs={
             "endpoint_name": endpoint_name,
