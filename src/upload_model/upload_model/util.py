@@ -49,13 +49,16 @@ def get_secret(secret_name):
 
 
 def upload_folder_to_s3(bucket_name: str,local_dir: str, folder: str):
+    logger.info("starting model upload")
     command = f"aws s3 cp {local_dir} {bucket_name}/{folder} --recursive"
     completed_process = subprocess.run(command.split(), capture_output=True)
+    logger.info("completed model upload")
+
 
 def folder_exists(bucket_name, folder_name):
     s3 = boto3.client('s3')
-    if not path.endswith('/'):
-        path = path+'/' 
+    if not folder_name.endswith('/'):
+        folder_name = folder_name+'/' 
     resp = s3.list_objects(Bucket=bucket_name, Prefix=folder_name, Delimiter='/',MaxKeys=1)
     return 'Contents' in resp
 

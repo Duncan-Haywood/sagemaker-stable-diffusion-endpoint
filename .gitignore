@@ -137,3 +137,4 @@ __pycache__
 # CDK asset staging directory
 .cdk.staging
 cdk.out
+src/upload_model/model
