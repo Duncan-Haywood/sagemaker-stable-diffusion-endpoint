@@ -78,7 +78,7 @@ class PipelineStack(Stack):
         )
         self.pipeline.add_stage(
             test_stage,
-            pre=[unit_tests()],
+            # pre=[unit_tests()],
             post=pipelines.Step.sequence(
                 [
                     set_endpoint_in_parameter_store(
