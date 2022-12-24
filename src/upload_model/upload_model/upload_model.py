@@ -1,8 +1,8 @@
 """Run upload_huggingface_token.py before use -- a dependency."""
 from diffusers import StableDiffusionInpaintPipeline
-import util
+from . import util
 import torch
-from logger import get_logger
+from .logger import get_logger
 
 logger = get_logger(__name__)
 
