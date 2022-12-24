@@ -71,23 +71,37 @@ class PipelineStack(Stack):
                 cache=codebuild.Cache.bucket(bucket=asset_cache_bucket),
             ),
         )
-        self.pipeline.add_stage(
+        # test stage
+        test_stage = (
             EndpointStage(
                 self,
                 "TestStage",
                 production="False",
             ),
-            pre=[unit_tests()],
-            post=[integration_tests(production="False")],
         )
         self.pipeline.add_stage(
-            EndpointStage(
-                self,
-                "ProdStage",
-                production="True",
+            test_stage,
+            pre=[unit_tests()],
+            post=pipelines.Step.sequence(
+                set_endpoint_in_parameter_store("False", test_stage.app.endpoint_name),
+                upload_model(test_stage.app.model_bucket_name),
+                integration_tests(production="False"),
             ),
+        )
+        # prod stage
+        prod_stage = EndpointStage(
+            self,
+            "ProdStage",
+            production="True",
+        )
+        self.pipeline.add_stage(
+            prod_stage,
             pre=[pipelines.ManualApprovalStep("PromoteToProd")],
-            post=[integration_tests()],
+            post=pipelines.Step.sequence(
+                set_endpoint_in_parameter_store("False", prod_stage.app.endpoint_name),
+                upload_model(prod_stage.app.model_bucket_name),
+                integration_tests(production="False"),
+            ),
         )
 
 
@@ -103,15 +117,6 @@ class EndpointStage(Stage):
 
         # create endpoint stack
         self.app = EndpointStack(self, "EndpointStack")
-
-        # add post processing steps
-        pipelines.StackSteps(
-            stack=self.app,
-            post=[
-                upload_model(self.app.model_bucket_name),
-                set_endpoint_in_parameter_store(production, self.app.endpoint_name),
-            ],
-        )
 
 
 ## functions referenced above
@@ -156,7 +161,7 @@ def set_endpoint_in_parameter_store(production, endpoint_name):
         "SetEndpointNameInParameterStore",
         install_commands=["pip install poetry", "cd src/util", "poetry install"],
         commands=[
-            "poetry run python ./util/param_store_endpoint_name.py",
+            "poetry run python -m util.param_store_endpoint_name",
         ],
         build_environment=codebuild.BuildEnvironment(
             compute_type=codebuild.ComputeType.MEDIUM,
@@ -175,7 +180,7 @@ def upload_model(model_bucket_name):
         "UploadModel",
         install_commands=["pip install poetry", "cd src/endpoint", "poetry install"],
         commands=[
-            "poetry run python ./endpoint/upload_model.py",
+            "poetry run python -m endpoint.upload_model",
         ],
         build_environment=codebuild.BuildEnvironment(
             compute_type=codebuild.ComputeType.LARGE,
