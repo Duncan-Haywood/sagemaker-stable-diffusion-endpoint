@@ -193,7 +193,9 @@ def upload_model(model_bucket_name):
         ),
         env_from_cfn_outputs={"model_bucket_name": model_bucket_name},
         role_policy_statements=[
-            iam.PolicyStatement(actions=["s3:*"], resources=["*"])
-            iam.PolicyStatement(actions=["secretsmanager:GetSecretValue"], resources=["*"])
+            iam.PolicyStatement(actions=["s3:*"], resources=["*"]),
+            iam.PolicyStatement(
+                actions=["secretsmanager:GetSecretValue"], resources=["*"]
+            ),
         ],
     )
