@@ -1,4 +1,3 @@
-
 from botocore import ClientError
 import boto3
 from .logger import get_logger

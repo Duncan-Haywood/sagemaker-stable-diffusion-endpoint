@@ -8,8 +8,6 @@ from .logger import get_logger
 logger = get_logger(__name__)
 
 
-
-
 def get_endpoint_name():
     """gets endpoint name from ssm parameter store"""
     try:
@@ -26,7 +24,6 @@ def get_endpoint_name():
     except Exception as e:
         logger.exception("get endpoint name failed")
         raise e
-
 
 
 def serialize_sagemaker_input(*args, **kwargs) -> bytes:

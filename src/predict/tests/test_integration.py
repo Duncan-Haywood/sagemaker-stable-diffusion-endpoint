@@ -11,7 +11,6 @@ def image():
     return Image.new(mode="RGB", size=(512, 512))
 
 
-
 @pytest.fixture
 def prompt():
     return "test"
