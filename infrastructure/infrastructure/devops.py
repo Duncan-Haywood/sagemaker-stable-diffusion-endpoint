@@ -175,6 +175,9 @@ def set_endpoint_in_parameter_store(env, endpoint_name):
         env_from_cfn_outputs={
             "endpoint_name": endpoint_name,
         },
+        role_policy_statements=[
+            iam.PolicyStatement(actions=["ssm:PutParameter"], resources=["*"])
+        ],
     )
 
 
