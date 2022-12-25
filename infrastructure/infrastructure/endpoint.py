@@ -108,4 +108,6 @@ class EndpointStack(Stack):
             "InvocationScalingPolicy",
             predefined_metric=appscaling.PredefinedMetric.SAGEMAKER_VARIANT_INVOCATIONS_PER_INSTANCE,
             target_value=1,
+            scale_in_cooldown=5,
+            scale_out_cooldown=30
         )
