@@ -1,4 +1,4 @@
-from aws_cdk import Stack, CfnOutput
+from aws_cdk import Stack, CfnOutput, Duration
 from aws_cdk import aws_s3 as s3
 from aws_cdk import aws_sagemaker as sagemaker
 from constructs import Construct
@@ -9,7 +9,7 @@ from aws_cdk.aws_ecr_assets import DockerImageAsset
 from aws_cdk import aws_applicationautoscaling as appscaling
 
 # TODO change once bug fixing is done
-INSTANCE_TYPE = "ml.p2.xlarge" # ml.c5.large
+INSTANCE_TYPE = "ml.p2.xlarge"  # ml.c5.large
 realinstancetypetochangeto = "ml.p2.xlarge"
 
 
@@ -108,6 +108,6 @@ class EndpointStack(Stack):
             "InvocationScalingPolicy",
             predefined_metric=appscaling.PredefinedMetric.SAGEMAKER_VARIANT_INVOCATIONS_PER_INSTANCE,
             target_value=1,
-            scale_in_cooldown=5,
-            scale_out_cooldown=30
+            scale_in_cooldown=Duration.seconds(5),
+            scale_out_cooldown=Duration.seconds(30),
         )
