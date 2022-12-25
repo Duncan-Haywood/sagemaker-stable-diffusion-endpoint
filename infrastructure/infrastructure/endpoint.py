@@ -9,7 +9,7 @@ from aws_cdk.aws_ecr_assets import DockerImageAsset
 from aws_cdk import aws_applicationautoscaling as appscaling
 
 # TODO change once bug fixing is done
-INSTANCE_TYPE = "ml.c5.large"
+INSTANCE_TYPE = "ml.p2.xlarge" # ml.c5.large
 realinstancetypetochangeto = "ml.p2.xlarge"
 
 
