@@ -71,23 +71,41 @@ class PipelineStack(Stack):
                 cache=codebuild.Cache.bucket(bucket=asset_cache_bucket),
             ),
         )
-        self.pipeline.add_stage(
-            EndpointStage(
-                self,
-                "TestStage",
-                production="False",
-            ),
-            pre=[unit_tests()],
-            post=[integration_tests(production="False")],
+        # test stage
+        test_stage = EndpointStage(
+            self,
+            "TestStage",
         )
         self.pipeline.add_stage(
-            EndpointStage(
-                self,
-                "ProdStage",
-                production="True",
+            test_stage,
+            # pre=[unit_tests()],
+            post=pipelines.Step.sequence(
+                [
+                    set_endpoint_in_parameter_store(
+                        "test", test_stage.app.endpoint_name
+                    ),
+                    upload_model(test_stage.app.model_bucket_name),
+                    integration_tests("test"),
+                ]
             ),
+        )
+        # prod stage
+        prod_stage = EndpointStage(
+            self,
+            "ProdStage",
+        )
+        self.pipeline.add_stage(
+            prod_stage,
             pre=[pipelines.ManualApprovalStep("PromoteToProd")],
-            post=[integration_tests("True")],
+            post=pipelines.Step.sequence(
+                [
+                    set_endpoint_in_parameter_store(
+                        "prod", prod_stage.app.endpoint_name
+                    ),
+                    upload_model(prod_stage.app.model_bucket_name),
+                    integration_tests("prod"),
+                ]
+            ),
         )
 
 
@@ -96,22 +114,12 @@ class EndpointStage(Stage):
         self,
         scope: Construct,
         construct_id: str,
-        production: bool = False,
         **kwargs,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         # create endpoint stack
         self.app = EndpointStack(self, "EndpointStack")
-
-        # add post processing steps
-        pipelines.StackSteps(
-            stack=self.app,
-            post=[
-                upload_model(self.app.model_bucket_name),
-                set_endpoint_in_parameter_store(production, self.app.endpoint_name),
-            ],
-        )
 
 
 ## functions referenced above
@@ -131,52 +139,67 @@ def unit_tests():
     )
 
 
-def integration_tests(production="True"):
+def integration_tests(env):
     return pipelines.CodeBuildStep(
         "IntegrationTest",
-        install_commands=["pip install poetry", "cd src/endpoint", "poetry install"],
+        install_commands=["pip install poetry", "cd src/predict", "poetry install"],
         commands=[
-            "poetry run pytest --local-integration --integration -n $(nproc)",
+            "poetry run pytest --integration",
         ],
-        env={"production": production},
+        env={"env": env},
         build_environment=codebuild.BuildEnvironment(
             privileged=True,
             compute_type=codebuild.ComputeType.LARGE,
         ),
         role_policy_statements=[
-            iam.PolicyStatement(actions=["ssm:GetParameter"], resources=["*"])
+            iam.PolicyStatement(actions=["ssm:GetParameter"], resources=["*"]),
+            iam.PolicyStatement(actions=["s3:*"], resources=["*"]),
+            iam.PolicyStatement(actions=["sagemaker:*"], resources=["*"]),
         ],
     )
 
 
-def set_endpoint_in_parameter_store(production, endpoint_name):
+def set_endpoint_in_parameter_store(env, endpoint_name):
     return pipelines.CodeBuildStep(
         "SetEndpointNameInParameterStore",
-        install_commands=["pip install poetry", "cd src/endpoint", "poetry install"],
+        install_commands=["pip install poetry", "cd src/util", "poetry install"],
         commands=[
-            "poetry run python ./endpoint/param_store_endpoint_name.py",
+            "poetry run python -m util.param_store_endpoint_name",
         ],
         build_environment=codebuild.BuildEnvironment(
             compute_type=codebuild.ComputeType.MEDIUM,
         ),
         env={
-            "production": production,
+            "env": env,
         },
         env_from_cfn_outputs={
             "endpoint_name": endpoint_name,
         },
+        role_policy_statements=[
+            iam.PolicyStatement(actions=["ssm:PutParameter"], resources=["*"])
+        ],
     )
 
 
 def upload_model(model_bucket_name):
     return pipelines.CodeBuildStep(
         "UploadModel",
-        install_commands=["pip install poetry", "cd src/endpoint", "poetry install"],
+        install_commands=[
+            "pip install poetry",
+            "cd src/upload_model",
+            "poetry install",
+        ],
         commands=[
-            "poetry run python ./endpoint/upload_model.py",
+            "poetry run python -m upload_model.upload_model",
         ],
         build_environment=codebuild.BuildEnvironment(
             compute_type=codebuild.ComputeType.LARGE,
         ),
-        env=dict(model_bucket_name=model_bucket_name),
+        env_from_cfn_outputs={"model_bucket_name": model_bucket_name},
+        role_policy_statements=[
+            iam.PolicyStatement(actions=["s3:*"], resources=["*"]),
+            iam.PolicyStatement(
+                actions=["secretsmanager:GetSecretValue"], resources=["*"]
+            ),
+        ],
     )

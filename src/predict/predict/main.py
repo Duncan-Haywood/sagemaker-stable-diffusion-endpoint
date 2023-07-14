@@ -10,9 +10,11 @@ class Predictor:
     def __init__(self):
         endpoint_name = util.get_endpoint_name()
         predictor = sagemaker.Predictor(endpoint_name=endpoint_name)
-        self.async_predictor = sagemaker.predictor_async.AsyncPredictor(predictor)
+        self.async_predictor = sagemaker.predictor_async.AsyncPredictor(
+            predictor, name="AysncDiffusionEndpoint"
+        )
         self.waiter_config = sagemaker.async_inference.waiter_config.WaiterConfig(
-            delay=3
+            delay=10, max_attempts=200
         )
         logger.info("Predictor initialized")
 

@@ -7,14 +7,11 @@ from .logger import get_logger
 logger = get_logger(__name__)
 
 
-def load_model(model_id, hugging_face_token):
+def load_model(hugging_face_token):
     """loads model from HuggingFace model hub into memory"""
     try:
         model = StableDiffusionInpaintPipeline.from_pretrained(
-            model_id,
-            use_auth_token=hugging_face_token,
-            revision="fp16",
-            torch_dtype=torch.float16,
+            "CompVis/stable-diffusion-v1-4", revision="fp16", torch_dtype=torch.float16
         )
         logger.info("model_download succeeded")
         return model
@@ -33,19 +30,10 @@ def save_model_local(model, local_dir):
         raise e
 
 
-def get_config() -> dict:
-    return dict(
-        model_id=util.get_model_repository(),
-        local_dir="./model",
-        bucket_name=util.get_model_bucket_name(),
-        key=util.get_model_s3_key(),
-        hugging_face_token=util.get_hugging_face_token(),
-    )
-
-
-def model_exists(bucket_name, key) -> bool:
+def model_exists(bucket_name, folder_name) -> bool:
     """checks whether model already exists in bucket"""
-    exists = util.file_exists(bucket_name, key)
+    logger.info("checking if model exists")
+    exists = util.folder_exists(bucket_name, folder_name)
     if exists:
         logger.info("model already exists")
     else:
@@ -55,11 +43,17 @@ def model_exists(bucket_name, key) -> bool:
 
 def main():
     """Download model from hugging face model hub and upload to s3 bucket."""
-    d = get_config()
-    if not model_exists(d.bucket_name, d.key):
-        model = load_model(d.model_id, d.hugging_face_token)
-        save_model_local(model, d.local_dir)
-        util.upload_file_to_s3(d.bucket_name, d.local_dir, d.key)
+    # config
+    local_dir = "./model"
+    bucket_name = util.get_model_bucket_name()
+    logger.info("bucket_name = %s" % bucket_name)
+    folder = "model"
+    hugging_face_token = util.get_hugging_face_token()
+    # upload file
+    if not model_exists(bucket_name, folder):
+        model = load_model(hugging_face_token)
+        save_model_local(model, local_dir)
+        util.upload_folder_to_s3(bucket_name, local_dir, folder)
         logger.info("model uploaded to s3")
 
 
