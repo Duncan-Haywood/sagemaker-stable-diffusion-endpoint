@@ -110,4 +110,5 @@ class EndpointStack(Stack):
             target_value=1,
             scale_in_cooldown=Duration.seconds(5),
             scale_out_cooldown=Duration.seconds(30),
+
         )
